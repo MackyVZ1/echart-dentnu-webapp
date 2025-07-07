@@ -150,7 +150,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
     setVerifyOn(!verifyOn);
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async () => {
     // Trigger validation first
     const isValid = await form.trigger();
     if (!isValid) {
