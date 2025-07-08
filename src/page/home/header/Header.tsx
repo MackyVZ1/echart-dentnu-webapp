@@ -67,7 +67,7 @@ function Header() {
     const token = sessionStorage.getItem("token");
     try {
       await axios.post(
-        "https://localhost:7017/api/auth/logout",
+        "https://echart-dentnu-api.onrender.com/api/auth/logout",
         {},
         {
           headers: {

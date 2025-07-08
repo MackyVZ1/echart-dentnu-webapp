@@ -171,7 +171,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `https://localhost:7017/api/tbdentalrecorduser/${selectedId}`,
+        `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${selectedId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -236,7 +236,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       }
 
       const response = await axios.get(
-        `https://localhost:7017/api/tbdentalrecorduser?${queryParams.toString()}`,
+        `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

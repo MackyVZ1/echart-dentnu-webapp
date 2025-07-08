@@ -186,7 +186,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
       if (onEdit && user) {
         console.log("กำลังดำเนินการอัปเดทข้อมูล...");
         response = await axios.patch(
-          `https://localhost:7017/api/tbdentalrecorduser/${user}`,
+          `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${user}`,
           staffPayload,
           {
             headers: {
@@ -210,7 +210,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
         }
       } else {
         response = await axios.post(
-          "https://localhost:7017/api/tbdentalrecorduser",
+          "https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser",
           staffPayload,
           {
             headers: {
@@ -263,7 +263,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
         try {
           const token = sessionStorage.getItem("token");
           const response = await axios.get(
-            `https://localhost:7017/api/tbdentalrecorduser/${user}`,
+            `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${user}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
