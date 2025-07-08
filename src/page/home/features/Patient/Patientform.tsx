@@ -173,7 +173,7 @@ function Patientform() {
       const birthDate = dayjs(formData.birthdate).format("DD/MM/BBBB");
 
       const response = await axios.post(
-        "https://localhost:7017/api/tpatient",
+        "https://echart-dentnu-api.onrender.com/api/tpatient",
         {
           dn: formData.dn,
           titleTh: formData.thPrefix,

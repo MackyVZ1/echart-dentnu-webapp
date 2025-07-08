@@ -87,7 +87,7 @@ function Patienttable() {
       const token = sessionStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://localhost:7017/api/tpatient/${selectedDN}`,
+        `https://echart-dentnu-api.onrender.com/api/tpatient/${selectedDN}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,7 +136,7 @@ function Patienttable() {
       }
 
       const response = await axios.get(
-        `https://localhost:7017/api/tpatient?${queryParams.toString()}`,
+        `https://echart-dentnu-api.onrender.com/api/tpatient?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

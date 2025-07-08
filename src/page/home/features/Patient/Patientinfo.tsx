@@ -37,7 +37,7 @@ function PatientInfo() {
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.get(
-        `https://localhost:7017/api/tpatient/${dn}`,
+        `https://echart-dentnu-api.onrender.com/api/tpatient/${dn}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
