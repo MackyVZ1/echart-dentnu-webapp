@@ -62,13 +62,12 @@ function LoginCard() {
 
       if (response?.data) {
         const user = response?.data;
-        const token = user.token;
-        const userInfo = user.userInfo;
+        const token = user.accessToken;
 
         sessionStorage.setItem("token", token);
-        sessionStorage.setItem("users", userInfo.username);
-        sessionStorage.setItem("roleName", userInfo.roleName);
-        sessionStorage.setItem("roleId", userInfo.roleID);
+        sessionStorage.setItem("users", user.users);
+        sessionStorage.setItem("roleName", user.role);
+        sessionStorage.setItem("roleId", user.roleID);
 
         setModalOn(true);
 
@@ -79,7 +78,7 @@ function LoginCard() {
       }
     } catch (e: any) {
       let errorMessage = e?.response?.data;
-      console.error(errorMessage);
+      // console.error(errorMessage);
       if (errorMessage == "Username and password are required") {
         errorMessage = "กรุณากรอกชื่อผู้ใช้\nและรหัสผ่าน";
         setError(errorMessage);
