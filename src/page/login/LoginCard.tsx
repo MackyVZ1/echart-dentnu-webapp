@@ -35,6 +35,8 @@ const formSchema = z.object({
   }),
 });
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function LoginCard() {
   const nav = useNavigate();
   const [modalOn, setModalOn] = useState<boolean>(false);
@@ -50,13 +52,10 @@ function LoginCard() {
 
   const handleSignup = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post(
-        "https://echart-dentnu-api.onrender.com/api/auth/login",
-        {
-          users: values.username,
-          passw: values.password,
-        }
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        users: values.username,
+        passw: values.password,
+      });
 
       console.log(response?.data);
 
@@ -78,7 +77,7 @@ function LoginCard() {
       }
     } catch (e: any) {
       let errorMessage = e?.response?.data;
-      // console.error(errorMessage);
+      // ที่console.error(errorMessage);
       if (errorMessage == "Username and password are required") {
         errorMessage = "กรุณากรอกชื่อผู้ใช้\nและรหัสผ่าน";
         setError(errorMessage);
