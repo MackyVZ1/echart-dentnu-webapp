@@ -51,7 +51,7 @@ function LoginCard() {
   const handleSignup = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post(
-        "https://localhost:7017/api/auth/login",
+        "https://echart-dentnu-api.onrender.com/api/auth/login",
         {
           users: values.username,
           passw: values.password,
