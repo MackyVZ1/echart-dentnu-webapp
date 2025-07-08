@@ -78,6 +78,8 @@ const formSchema = z.object({
   }),
 });
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
   const [staffCode, setStaffCode] = useState<Staff["staffCode"]>("");
   const [license, setLicense] = useState<Staff["license"]>("");
@@ -186,7 +188,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
       if (onEdit && user) {
         console.log("กำลังดำเนินการอัปเดทข้อมูล...");
         response = await axios.patch(
-          `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${user}`,
+          `${API_BASE_URL}/api/tbdentalrecorduser/${user}`,
           staffPayload,
           {
             headers: {
@@ -210,7 +212,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
         }
       } else {
         response = await axios.post(
-          "https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser",
+          `${API_BASE_URL}/api/tbdentalrecorduser`,
           staffPayload,
           {
             headers: {
@@ -263,7 +265,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
         try {
           const token = sessionStorage.getItem("token");
           const response = await axios.get(
-            `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${user}`,
+            `${API_BASE_URL}/api/tbdentalrecorduser/${user}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

@@ -29,6 +29,8 @@ type Patient = {
   parentPhone: string | null;
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function PatientInfo() {
   const { dn } = useParams<{ dn: string }>();
   const [patient, setPatient] = useState<Patient>();
@@ -36,14 +38,11 @@ function PatientInfo() {
   const patientinfoFetch = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const response = await axios.get(
-        `https://echart-dentnu-api.onrender.com/api/tpatient/${dn}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_BASE_URL}/api/tpatient/${dn}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       console.log(response.data);
       setPatient(response.data);

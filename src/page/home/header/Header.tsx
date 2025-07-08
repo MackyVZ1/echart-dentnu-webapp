@@ -30,6 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Header() {
   const [isActive, setActive] = useState<boolean>(false);
   const [modalOn, setModalOn] = useState<boolean>(false);
@@ -67,7 +70,7 @@ function Header() {
     const token = sessionStorage.getItem("token");
     try {
       await axios.post(
-        "https://echart-dentnu-api.onrender.com/api/auth/logout",
+        `${API_BASE_URL}/api/auth/logout`,
         {},
         {
           headers: {
