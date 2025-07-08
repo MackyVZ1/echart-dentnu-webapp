@@ -62,6 +62,8 @@ const patientSchema = z.object({
 
 type PatientFormData = z.infer<typeof patientSchema>;
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function Patientform() {
   const [age, setAge] = useState<number | undefined>(undefined);
   const [modalOn, setModalOn] = useState<boolean>(false);
@@ -173,7 +175,7 @@ function Patientform() {
       const birthDate = dayjs(formData.birthdate).format("DD/MM/BBBB");
 
       const response = await axios.post(
-        "https://echart-dentnu-api.onrender.com/api/tpatient",
+        `${API_BASE_URL}/api/tpatient`,
         {
           dn: formData.dn,
           titleTh: formData.thPrefix,

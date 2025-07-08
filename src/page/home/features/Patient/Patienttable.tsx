@@ -34,6 +34,8 @@ type Patient = {
   titleTh: string | null;
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function getPagination(current: number, total: number) {
   const delta = 2;
   const range = [];
@@ -87,7 +89,7 @@ function Patienttable() {
       const token = sessionStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://echart-dentnu-api.onrender.com/api/tpatient/${selectedDN}`,
+        `${API_BASE_URL}/api/tpatient/${selectedDN}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,7 +138,7 @@ function Patienttable() {
       }
 
       const response = await axios.get(
-        `https://echart-dentnu-api.onrender.com/api/tpatient?${queryParams.toString()}`,
+        `${API_BASE_URL}/api/tpatient?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
