@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { AddIcon } from "@/assets/svg";
 import { Button } from "@/components/ui/button";
 import Flex from "@/components/Flex";
 import Text from "@/components/Text";
 import Stafftable from "./Stafftable";
 import Addstaff from "./Addstaff";
+import { CirclePlusIcon } from "lucide-react";
 
 function StaffManagement() {
   const [isClick, setIsClick] = useState<boolean>(false);
@@ -31,7 +31,7 @@ function StaffManagement() {
             className="max-lg:w-full"
             onClick={handleAddButton}
           >
-            <AddIcon />
+            <CirclePlusIcon />
             <Text medium className="md:text-[18px] lg:text-[20px]">
               เพิ่มเจ้าหน้าที่
             </Text>

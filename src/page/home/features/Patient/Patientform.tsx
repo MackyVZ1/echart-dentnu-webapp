@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { AddIcon } from "@/assets/svg/index";
 import dayjs from "dayjs";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import axios from "axios";
@@ -30,6 +29,9 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CirclePlusIcon } from "lucide-react";
 
 const patientSchema = z.object({
   dn: z.string().min(1, "กรุณากรอก DN"),
@@ -55,8 +57,26 @@ const patientSchema = z.object({
   emergencyPhone: z.string().min(1, "กรุณากรอกเบอร์ติดต่อฉุกเฉิน"),
   priv: z.string().min(1, "กรุณาเลือกสิทธิการรักษา"),
   hospitalPriv: z.string().optional(),
+  sys: z.string().min(2, "กรุณากรอกเลขความดันโลหิต"),
+  dia: z.string().min(2, "กรุณากรอกความดันโลหิต"),
+  pr: z.string().min(2, "กรุณากรอกเลขชีพจร"),
+  temperature: z.string().min(2, "กรุณากรอกอุณหภูมิ"),
+  urgentLevel: z.string(),
   isVerified: z.boolean().refine((val) => val === true, {
     message: "กรุณายืนยันข้อมูลก่อนเพิ่มคนไข้",
+  }),
+  patientType: z.string(),
+  healthConditions: z.object({
+    highBP: z.boolean(),
+    diabetes: z.boolean(),
+    heart: z.boolean(),
+    thyroid: z.boolean(),
+    stroke: z.boolean(),
+    immuno: z.boolean(),
+    pregnant: z.boolean(),
+    pregnantWeeks: z.string(),
+    other: z.string(),
+    otherChecked: z.boolean(),
   }),
 });
 
@@ -71,18 +91,34 @@ function Patientform() {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+  const [dropletChecks, setDropletChecks] = useState<boolean[]>(
+    Array(6).fill(false)
+  );
+  const [airborneChecks, setAirborneChecks] = useState<boolean[]>(
+    Array(8).fill(false)
+  );
+  const [contactChecks, setContactChecks] = useState<boolean[]>(
+    Array(6).fill(false)
+  );
+
+  const [checklistSummary, setChecklistSummary] = useState<boolean[]>([
+    false,
+    false,
+    false,
+  ]);
+
   const thPrefixes = [
     { value: "นาย", label: "นาย" },
     { value: "นาง", label: "นาง" },
     { value: "นางสาว", label: "นางสาว" },
-    { value: "เด็กชาย", label: "เด็กชาย" },
-    { value: "เด็กหญิง", label: "เด็กหญิง" },
+    { value: "ด.ช.", label: "ด.ช." },
+    { value: "ด.ญ.", label: "ด.ญ." },
   ];
 
   const enPrefixes = [
     { value: "Mr.", label: "Mr." },
     { value: "Mrs.", label: "Mrs." },
-    { value: "Ms.", label: "Ms." },
+    { value: "Master", label: "Master" },
     { value: "Miss", label: "Miss" },
   ];
 
@@ -107,9 +143,14 @@ function Patientform() {
   ];
 
   const privOptions = [
+    { value: "ชำระเงินเอง", label: "ชำระเงินเอง" },
+    {
+      value: "ชำระเงินเอง/ เบิกต้นสังกัด",
+      label: "ชำระเงินเอง/ เบิกต้นสังกัด",
+    },
+    { value: "บัตรทอง", label: "บัตรทอง" },
     { value: "ประกันสังคม", label: "ประกันสังคม" },
-    { value: "ประกันสุขภาพ", label: "ประกันสุขภาพ" },
-    { value: "สิทธิการรักษาบัตรทอง", label: "สิทธิการรักษาบัตรทอง" },
+    { value: "เบิกได้จ่ายตรง", label: "เบิกได้จ่ายตรง" },
   ];
 
   const hospitalPrivOptions = [
@@ -144,6 +185,24 @@ function Patientform() {
       priv: privOptions[0].value,
       hospitalPriv: hospitalPrivOptions[0].value,
       isVerified: false,
+      urgentLevel: "Non-Urgency",
+      patientType: "Normal",
+      sys: "",
+      dia: "",
+      pr: "",
+      temperature: "",
+      healthConditions: {
+        highBP: false,
+        diabetes: false,
+        heart: false,
+        thyroid: false,
+        stroke: false,
+        immuno: false,
+        pregnant: false,
+        pregnantWeeks: "",
+        other: "",
+        otherChecked: false,
+      },
     },
   });
 
@@ -297,6 +356,28 @@ function Patientform() {
   };
 
   useEffect(() => {
+    const dropletCount = dropletChecks.filter(Boolean).length;
+    const airborneCount = airborneChecks.filter(Boolean).length;
+    const contactCount = contactChecks.filter(Boolean).length;
+
+    const meetsCriteria =
+      dropletCount >= 2 || airborneCount >= 1 || contactCount >= 2;
+
+    if (meetsCriteria) {
+      form.setValue("patientType", "Aware"); // เฝ้าระวัง
+    } else {
+      form.setValue("patientType", "Normal"); // ไม่เข้าเกณฑ์
+    }
+
+    // อัปเดตติ๊ก checkbox "เข้าเกณฑ์อย่างน้อย X ข้อ"
+    setChecklistSummary([
+      dropletCount >= 2,
+      airborneCount >= 1,
+      contactCount >= 2,
+    ]);
+  }, [dropletChecks, airborneChecks, contactChecks]);
+
+  useEffect(() => {
     if (watchedBirthdate) {
       const calculatedAge = dayjs().diff(dayjs(watchedBirthdate), "year");
       setAge(calculatedAge);
@@ -307,12 +388,12 @@ function Patientform() {
 
   return (
     <Flex direction="column" className="xl:h-screen ">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleModal)}
-          className="flex-1 flex flex-col min-h-0 gap-4"
-        >
-          <ScrollArea className=" lg:h-[calc(100vh-150px)] rounded-md ">
+      <ScrollArea className="py-4">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleModal)}
+            className="flex-1 flex flex-col min-h-0 gap-4"
+          >
             <Flex
               className="w-full h-full border border-[#848484] rounded-[16px] p-6  lg:py-[15px] lg:px-[30px]  gap-[20px] "
               direction="column"
@@ -787,45 +868,6 @@ function Patientform() {
               <Flex alignItems="start" className="gap-[12px] h-full w-full">
                 <Text className="lg:text-[22px] md:mt-3">สิทธิการรักษา</Text>
                 <Flex direction="column" className="gap-[12px] xl:flex-row">
-                  {/* <Select
-                    name="priv"
-                    onValueChange={(e) => setPriv(e as string)}
-                  >
-                    <SelectTrigger className="border-[3px] border-[#A861D4]">
-                      <SelectValue placeholder="เลือกสิทธิการรักษา" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>
-                          <Text className="min-w-[500px]"> สิทธิการรักษา</Text>
-                        </SelectLabel>
-                        {privOptions.map((option, index) => (
-                          <SelectItem key={index} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {priv === "สิทธิการรักษาบัตรทอง" && (
-                    <Select
-                      name="hospitalPriv"
-                      onValueChange={(e) => sethospitalPriv(e as string)}
-                    >
-                      <SelectTrigger className="border-[3px] border-[#A861D4] w-full">
-                        <SelectValue placeholder="เลือกสถานที่ที่ใช้สิทธิ" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {hospitalPrivOptions.map((option, index) => (
-                            <SelectItem key={index} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )} */}
                   <FormField
                     control={form.control}
                     name="priv"
@@ -855,7 +897,7 @@ function Patientform() {
                       </FormItem>
                     )}
                   />
-                  {form.getValues("priv") === "สิทธิการรักษาบัตรทอง" && (
+                  {form.getValues("priv") === "บัตรทอง" && (
                     <FormField
                       control={form.control}
                       name="hospitalPriv"
@@ -891,72 +933,695 @@ function Patientform() {
                 </Flex>
               </Flex>
             </Flex>
-          </ScrollArea>
-          <Flex
-            className="w-full max-lg:gap-[20px] md:flex-row"
-            alignItems="center"
-            justifyContent="between"
-            direction="column"
-          >
-            <Flex className="gap-[12px]" alignItems="center">
-              {/* <Checkbox
-                    checked={isVerified}
-                    onCheckedChange={(checked) =>
-                      setIsVerified(checked as boolean)
-                    }
-                  /> */}
-              <FormField
-                control={form.control}
-                name="isVerified"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <Text className="text-[14px] lg:text-[20px]" medium>
-                ข้าพเจ้ายินยอมเปิดเผยข้อมูลส่วนตัวและยืนยันว่าข้อมูลข้างต้นเป็นความจริง
-              </Text>
-            </Flex>
-            <Flex>
-              <Button
-                size={"sm"}
-                className="bg-[#A861D4] hover:bg-[#A861D4]/70"
-                // onClick={handleModal}
-              >
-                <AddIcon />
-                <Text>เพิ่มคนไข้</Text>
-              </Button>
-            </Flex>
-          </Flex>
 
-          {verifyOn == true && (
+            {/**คัดกรองเบื้องต้น */}
             <Flex
-              className="fixed inset-0 z-50 bg-black/40"
-              justifyContent="center"
-              alignItems="center"
+              className="w-full h-full border border-[#848484] rounded-[16px] p-6  lg:py-[15px] lg:px-[30px]  gap-[32px] "
+              direction="column"
             >
-              <VerifyModal
-                message="ยืนยันการเพิ่มคนไข้"
-                onCancel={handleModal}
-                onVerify={handleAddPatient}
-              />
+              <Flex direction="column" className="gap-[12px]">
+                <Text className="lg:text-[22px]">ความดันโลหิต</Text>
+                <Flex
+                  direction="column"
+                  className="gap-[12px] md:gap-[72px] md:flex-row"
+                >
+                  <Flex alignItems="center" className="gap-[12px]">
+                    <Text className="lg:text-[22px]">{"Systolic (SYS)"}</Text>
+                    <FormField
+                      control={form.control}
+                      name="sys"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="120"
+                              className="w-16"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Text className="lg:text-[22px]">mmHg</Text>
+                  </Flex>
+                  <Flex
+                    direction="row"
+                    alignItems="center"
+                    className="gap-[12px]"
+                  >
+                    <Text className="lg:text-[22px]">{"Diastolic (DIA)"}</Text>
+                    <FormField
+                      control={form.control}
+                      name="dia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="80"
+                              className="w-16"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Text className="lg:text-[22px]">mmHg</Text>
+                  </Flex>
+                </Flex>
+                <Flex
+                  direction="column"
+                  className="gap-[12px] md:gap-[64px] md:flex-row"
+                >
+                  <Flex alignItems="center" className="gap-[12px]">
+                    <Text className="lg:text-[22px]">{"Pulse Rate (PR)"}</Text>
+                    <FormField
+                      control={form.control}
+                      name="pr"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="95"
+                              className="w-16"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Text className="lg:text-[22px]">ครั้ง/นาที</Text>
+                  </Flex>
+                  <Flex alignItems="center" className="gap-[12px]">
+                    <Text className="lg:text-[22px]">อุณหภูมิ</Text>
+                    <FormField
+                      control={form.control}
+                      name="temperature"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="34"
+                              className="w-16"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Text className="lg:text-[22px]">°C</Text>
+                  </Flex>
+                </Flex>
+              </Flex>
+              <Flex direction="column" className="gap-[24px]">
+                <Text className="lg:text-[22px]" bold>
+                  ความเร่งด่วนในการรักษา
+                </Text>
+                <Flex direction="column" className="md:px-6">
+                  <FormField
+                    control={form.control}
+                    name="urgentLevel"
+                    render={({ field }) => (
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="md:flex md:flex-row md:gap-[50px]"
+                      >
+                        <Flex alignItems="center" className="gap-[8px]">
+                          <RadioGroupItem value="Emergency" id="emergency" />
+                          <Text
+                            className="text-red-600 lg:text-[18px] xl:text-[20px]"
+                            bold
+                          >
+                            Emergency
+                          </Text>
+                        </Flex>
+                        <Flex alignItems="center" className="gap-[8px]">
+                          <RadioGroupItem value="Urgency" id="urgency" />
+                          <Text
+                            className="text-amber-600 lg:text-[18px] xl:text-[20px]"
+                            bold
+                          >
+                            Urgency
+                          </Text>
+                        </Flex>
+                        <Flex alignItems="center" className="gap-[8px]">
+                          <RadioGroupItem value="Non-Urgency" id="nonUrgency" />
+                          <Text
+                            className="text-green-600 lg:text-[18px] xl:text-[20px]"
+                            bold
+                          >
+                            Non-Urgency
+                          </Text>
+                        </Flex>
+                      </RadioGroup>
+                    )}
+                  />
+                </Flex>
+              </Flex>
             </Flex>
-          )}
 
-          {modalOn && !error && (
-            <SuccessModal message={successMessage} isVisible={modalOn} />
-          )}
-          {modalOn && !!error && (
-            <ErrorModal message={error} isVisible={modalOn} />
-          )}
-        </form>
-      </Form>
+            {/**คัดกรองจริงๆนะ */}
+            <Flex
+              className="w-full h-full border border-[#848484] rounded-[16px] p-6  lg:py-[15px] lg:px-[30px]  gap-[32px] "
+              direction="column"
+            >
+              <Text className="lg:text-[22px]" bold>
+                เกณฑ์การแพร่กระจายเชื้อ
+              </Text>
+              <Flex
+                direction="column"
+                className="gap-[30px] md:grid md:grid-cols-3"
+              >
+                <Flex direction="column" className="gap-[20px] md:text-center">
+                  <Text className="lg:text-[18px] xl:text-[20px]" bold>
+                    การแพร่กระจายเชื้อผ่านละอองฝอย
+                  </Text>
+                  <Flex direction="column" className="gap-[10px]">
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[0]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[0] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"1. มีไข้ (อุณหภูมิ > 37.5 °C"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[1]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[1] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"2. ไอ จาม น้ำมูก"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[2]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[2] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"3. มีเสมหะ เจ็บคอ"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[3]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[3] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">{"4. ปวดศีรษะ"}</Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[4]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[4] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">{"5. อ่อนเพลีย"}</Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={dropletChecks[5]}
+                        onCheckedChange={(value) => {
+                          const updated = [...dropletChecks];
+                          updated[5] = !!value;
+                          setDropletChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"6. ปวดกล้ามเนื้อ"}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
+                <Flex direction="column" className="gap-[20px] md:text-center">
+                  <Text className="lg:text-[18px] xl:text-[20px]" bold>
+                    การแพร่เชื้อทางอากาศ
+                  </Text>
+                  <Flex direction="column" className="gap-[10px]">
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[0]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[0] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"1. ไอเรื้อรัง เกิน 2 สัปดาห์"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[1]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[1] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">{"2. ไอมีเลือดปน"}</Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[2]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[2] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"3. น้ำหนักลด 3-5 กก./เดือน โดยไม่ทราบสาเหตุ"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[3]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[3] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"4. มีไข้ตอนบ่าย เกิน 2 สัปดาห์"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[4]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[4] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"5. มีเหงือออกกลางคืนใน 1 เดือน"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[5]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[5] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"6. มีประวัติสัมผัสกีบผู้ป่วยวัณโรค"}
+                      </Text>
+                    </Flex>
+                    <Flex direction="column" className="gap-[6px]">
+                      <Flex alignItems="center" className="gap-[6px]">
+                        <Checkbox
+                          checked={airborneChecks[6]}
+                          onCheckedChange={(value) => {
+                            const updated = [...airborneChecks];
+                            updated[6] = !!value;
+                            setAirborneChecks(updated);
+                          }}
+                        />
+                        <Text className="lg:text-[18px]">
+                          {"7. กำลังรักษาวัณโรค"}
+                        </Text>
+                      </Flex>
+                      {airborneChecks[6] == true && (
+                        <Flex alignItems="center" className="gap-2">
+                          <Text className="lg:text-[18px]">รักษามาแล้ว</Text>
+                          <Input className="w-12" />
+                          <Text className="lg:text-[18px]">เดือน</Text>
+                        </Flex>
+                      )}
+                    </Flex>
+                  </Flex>
+                  <Flex direction="column" className="gap-[10px]">
+                    <Text className="lg:text-[20px]" bold>
+                      ประวัติผู้ป่วยวัณโรค
+                    </Text>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={airborneChecks[7]}
+                        onCheckedChange={(value) => {
+                          const updated = [...airborneChecks];
+                          updated[7] = !!value;
+                          setAirborneChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        มีใบรับรองแพทย์ระยะเวลาไม่เกิน 1 เดือนว่าไม่พบเชื้อแล้ว
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
+                <Flex direction="column" className="gap-[20px] md:text-center">
+                  <Text className="lg:text-[18px] xl:text-[20px]" bold>
+                    การแพร่เชื้อทางการสัมผัส
+                  </Text>
+                  <Flex direction="column" className="gap-[10px]">
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[0]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[0] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"1. มีตุ่มน้ำที่ริมฝีปาก"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[1]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[1] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"2. มีแผลเจ็บ แสบ ร้อนที่ริมฝีปาก"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[2]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[2] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text>{"3. มีตุ่มน้ำใสแนวยาวตามผิวหนังร่างกาย"}</Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[3]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[3] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"4. รู้สึกเจ็บแปลบบริเวณผิวหนัง"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[4]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[4] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"5. รู้สึกคัน ปวดแสบ ปวดร้อนบริเวณผิวหนัง"}
+                      </Text>
+                    </Flex>
+                    <Flex alignItems="center" className="gap-[6px]">
+                      <Checkbox
+                        checked={contactChecks[5]}
+                        onCheckedChange={(value) => {
+                          const updated = [...contactChecks];
+                          updated[5] = !!value;
+                          setContactChecks(updated);
+                        }}
+                      />
+                      <Text className="lg:text-[18px]">
+                        {"6. มีประวัติเคยเป็นเริมหรืองูสวัด"}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </Flex>
+              <Flex
+                direction="column"
+                alignItems="start"
+                className="gap-[6px] md:grid md:grid-cols-3 md:items-center"
+              >
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox checked={checklistSummary[0]} disabled />
+                  <Text className="lg:text-[18px]">
+                    เข้าเกณฑ์อย่างน้อย 2 ข้อ
+                  </Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox checked={checklistSummary[1]} disabled />
+                  <Text className="lg:text-[18px]">
+                    เข้าเกณฑ์อย่างน้อย 1 ข้อ
+                  </Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox checked={checklistSummary[2]} disabled />
+                  <Text className="lg:text-[18px]">
+                    เข้าเกณฑ์อย่างน้อย 2 ข้อ
+                  </Text>
+                </Flex>
+              </Flex>
+              <Flex direction="column" className="gap-[20px]">
+                <Text className="lg:text-[22px]" bold>
+                  ประเภทผู้ป่วย
+                </Text>
+                <FormField
+                  control={form.control}
+                  name="patientType"
+                  render={({ field }) => (
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="md:flex md:flex-row"
+                    >
+                      <Flex alignItems="center" className="gap-[6px]">
+                        <RadioGroupItem value="Normal" />
+                        <Text className="lg:text-[18px]">
+                          ผู้ป่วยไม่เข้าเกณฑ์การแพร่กระจายเชื่อ
+                        </Text>
+                      </Flex>
+                      <Flex alignItems="center" className="gap-[6px]">
+                        <RadioGroupItem value="Aware" />
+                        <Text className="lg:text-[18px] text-purple-700">
+                          ผู้ป่วยเฝ้าระวังการแพร่กระจายเชื้อ
+                        </Text>
+                      </Flex>
+                    </RadioGroup>
+                  )}
+                />
+              </Flex>
+            </Flex>
+
+            <Flex
+              className="w-full h-full border border-[#848484] rounded-[16px] p-6  lg:py-[15px] lg:px-[30px]  gap-[32px] "
+              direction="column"
+            >
+              <Text className="lg:text-[22px]" bold>
+                ภาวะสุขภาพทางระบบ
+              </Text>
+              <Flex
+                direction="column"
+                className="gap-[32px] md:gap-[20px] md:grid md:grid-cols-4"
+              >
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.highBP")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.highBP", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">ความดันโลหิตสูง</Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.diabetes")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.diabetes", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">เบาหวาน</Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.heart")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.heart", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">โรคหัวใจ</Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.thyroid")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.thyroid", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">โรคไทรอยด์</Text>
+                </Flex>
+              </Flex>
+              <Flex
+                direction="column"
+                className="gap-[32px] md:gap-[20px] md:flex-row"
+              >
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.stroke")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.stroke", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">
+                    {"มีประวัติเป็นโรคหลอดเลือดสมอง (stroke) หรือเคยมีอาการ"}
+                  </Text>
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.immuno")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.immuno", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px]">ภาวะภูมิคุ้มกันบกพร่อง</Text>
+                </Flex>
+              </Flex>
+              <Flex
+                direction="column"
+                className="gap-[32px] md:gap-[20px] md:flex-row"
+              >
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.pregnant")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.pregnant", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px] lg:min-w-[80px]">
+                    ตั้งครรภ์{" "}
+                  </Text>
+                  {form.getValues("healthConditions.pregnant") == true && (
+                    <>
+                      <Input
+                        name="pregnantWeek"
+                        value={form.watch("healthConditions.pregnantWeeks")}
+                        onChange={(e) =>
+                          form.setValue(
+                            "healthConditions.pregnantWeeks",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <Text className="lg:text-[18px] ">สัปดาห์</Text>
+                    </>
+                  )}
+                </Flex>
+                <Flex alignItems="center" className="gap-[6px]">
+                  <Checkbox
+                    checked={form.watch("healthConditions.otherChecked")}
+                    onCheckedChange={(val) =>
+                      form.setValue("healthConditions.otherChecked", !!val)
+                    }
+                  />
+                  <Text className="lg:text-[18px] lg:min-w-[50px]">
+                    {" "}
+                    อื่น ๆ
+                  </Text>
+                  {form.getValues("healthConditions.otherChecked") == true && (
+                    <Input
+                      name="other"
+                      value={form.watch("healthConditions.other")}
+                      onChange={(e) =>
+                        form.setValue("healthConditions.other", e.target.value)
+                      }
+                    />
+                  )}
+                </Flex>
+              </Flex>
+            </Flex>
+
+            <Flex
+              className="w-full max-lg:gap-[20px] md:flex-row"
+              alignItems="center"
+              justifyContent="between"
+              direction="column"
+            >
+              <Flex className="gap-[12px]" alignItems="center">
+                <FormField
+                  control={form.control}
+                  name="isVerified"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Text className="text-[14px] lg:text-[20px]" medium>
+                  ข้าพเจ้ายินยอมเปิดเผยข้อมูลส่วนตัวและยืนยันว่าข้อมูลข้างต้นเป็นความจริง
+                </Text>
+              </Flex>
+              <Flex>
+                <Button type="submit" size={"sm"}>
+                  <CirclePlusIcon />
+                  <Text>เพิ่มคนไข้</Text>
+                </Button>
+              </Flex>
+            </Flex>
+
+            {verifyOn == true && (
+              <Flex
+                className="fixed inset-0 z-50 bg-black/40"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <VerifyModal
+                  message="ยืนยันการเพิ่มคนไข้"
+                  onCancel={handleModal}
+                  onVerify={handleAddPatient}
+                />
+              </Flex>
+            )}
+
+            {modalOn && !error && (
+              <SuccessModal message={successMessage} isVisible={modalOn} />
+            )}
+            {modalOn && !!error && (
+              <ErrorModal message={error} isVisible={modalOn} />
+            )}
+          </form>
+        </Form>
+      </ScrollArea>
     </Flex>
   );
 }

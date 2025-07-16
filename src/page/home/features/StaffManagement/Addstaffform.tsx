@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
 import axios from "axios";
-import { AddIcon, SaveIcon } from "@/assets/svg";
 import {
   Form,
   FormControl,
@@ -25,6 +24,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { CirclePlusIcon, Save } from "lucide-react";
 
 type Staff = {
   staffCode: string;
@@ -352,7 +352,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
                 value={onEdit ? title : undefined}
                 onValueChange={(e) => setTitle(e as Staff["title"])}
               >
-                <SelectTrigger className="border-[3px] border-[#A861D4] rounded-[6px] w-full">
+                <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกคำนำหน้า" />
                 </SelectTrigger>
                 <SelectContent>
@@ -462,7 +462,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
                 value={onEdit ? role.toString() : undefined}
                 onValueChange={(e) => setRole(Number(e) as Staff["role"])}
               >
-                <SelectTrigger className="border-[3px] border-[#A861D4] rounded-[6px] w-full">
+                <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกตำแหน่ง" />
                 </SelectTrigger>
                 <SelectContent>
@@ -485,7 +485,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
                 value={onEdit ? sort.toString() : undefined}
                 onValueChange={(e) => setSort(Number(e) as Staff["sort"])}
               >
-                <SelectTrigger className="border-[3px] border-[#A861D4] rounded-[6px] w-full">
+                <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกประเภท" />
                 </SelectTrigger>
                 <SelectContent>
@@ -510,7 +510,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
                 value={onEdit ? type : undefined}
                 onValueChange={(e) => setType(e as Staff["type"])}
               >
-                <SelectTrigger className="border-[3px] border-[#A861D4] rounded-[6px] w-full">
+                <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกชนิด" />
                 </SelectTrigger>
                 <SelectContent>
@@ -532,7 +532,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
                 value={onEdit ? clinic.toString() : undefined}
                 onValueChange={(e) => setClinic(e as Staff["clinic"])}
               >
-                <SelectTrigger className="border-[3px] border-[#A861D4] rounded-[6px] w-full">
+                <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกคลินิก" />
                 </SelectTrigger>
                 <SelectContent>
@@ -549,12 +549,8 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
             </Flex>
           </Flex>
           <Flex justifyContent="center">
-            <Button
-              type="submit"
-              size={"sm"}
-              className="bg-[#A861D4] hover:bg-[#A861D4]/70"
-            >
-              {onEdit ? <SaveIcon /> : <AddIcon />}
+            <Button type="submit" size={"sm"}>
+              {onEdit ? <Save /> : <CirclePlusIcon />}
               <Text className="lg:text-[20px]">
                 {onEdit ? "บันทึก" : "เพิ่มเจ้าหน้าที่"}
               </Text>
