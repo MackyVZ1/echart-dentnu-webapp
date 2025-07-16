@@ -4,23 +4,11 @@ import { Button } from "@/components/ui/button";
 import Flex from "@/components/Flex";
 import Text from "@/components/Text";
 
-import DentImg from "@/assets/logo/dent_logo_nobackground.png";
+import DentImg from "@/assets/png/dentnu_logo.png";
 
-import {
-  AdduserIcon,
-  HamburgerIcon,
-  CloseIcon,
-  LogoutIcon,
-  StaffManagementIcon,
-  ReserveChartIcon,
-  DashboardIcon,
-  RoomIcon,
-  RightArrow,
-  LeftArrow,
-} from "../../../assets/svg/index";
-import { colors } from "../../../theme/theme";
+import { colors } from "@/theme/theme";
 import axios from "axios";
-import { SuccessModal, ErrorModal } from "../../../components/Modal";
+import { SuccessModal, ErrorModal } from "@/components/Modal";
 import {
   Select,
   SelectContent,
@@ -30,6 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CircleGaugeIcon,
+  LogOutIcon,
+  MenuIcon,
+  UsersIcon,
+  X,
+} from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -48,8 +43,6 @@ function Header() {
   const [selectedRole, setSelectedRole] = useState<string>(
     sessionStorage.getItem("roleName") || ""
   );
-
-  const [collapsed, setCollapsed] = useState(false);
 
   const handleNavbar = () => {
     setActive(!isActive);
@@ -117,37 +110,25 @@ function Header() {
 
   const allFeatures = [
     {
-      icon: <DashboardIcon />,
+      icon: <CircleGaugeIcon color="white" />,
       func: () => nav("/home"),
       desc: "แดชบอร์ด",
       roles: ["Administrator"],
     },
     {
-      icon: <StaffManagementIcon />,
+      icon: <UsersIcon color="white" />,
       func: () => nav("/home/staffmanagement"),
       desc: "จัดการข้อมูลเจ้าหน้าที่",
       roles: ["Administrator"],
     },
     {
-      icon: <AdduserIcon />,
+      icon: <UsersIcon color="white" />,
       func: () => nav("/home/patientmanagement"),
       desc: "จัดการข้อมูลคนไข้",
       roles: ["เวชระเบียน"],
     },
     {
-      icon: <ReserveChartIcon />,
-      func: () => nav("/home/chartreserve"),
-      desc: "จอง/คืนชาร์ต",
-      roles: ["เวชระเบียน", "อาจารย์", "ปริญญาตรี", "ปริญญาโท"],
-    },
-    {
-      icon: <RoomIcon />,
-      func: () => nav("/home/refer"),
-      desc: "Refer",
-      roles: ["เวชระเบียน", "อาจารย์", "ปริญญาตรี", "ปริญญาโท"],
-    },
-    {
-      icon: <LogoutIcon />,
+      icon: <LogOutIcon color="white" />,
       func: handleSignout,
       desc: "ลงชื่อออก",
       roles: [
@@ -215,21 +196,19 @@ function Header() {
     <>
       {/******** Mobile *********/}
       <Flex
-        className={`sticky top-0 z-50 p-[20px] w-full h-[75px] shadow-[${colors.primary}] shadow-lg
+        className={`sticky top-0 z-50 p-[20px] w-full h-[75px] bg-[#4B006E] shadow-[#75389b]  shadow-lg
           md:h-[100px] md:justify-start md:gap-6
-          lg:hidden`}
-        backgroundColor="secondary"
+          xl:hidden`}
         alignItems="center"
         justifyContent="between"
       >
         <Flex
-          className="p-2 rounded-xl md:w-[62px] md:h-[62px]"
-          backgroundColor="primary"
+          className="bg-[#6b039b] p-2 rounded-xl md:w-[62px] md:h-[62px] "
           alignItems="center"
           justifyContent="center"
           onClick={handleNavbar}
         >
-          <HamburgerIcon />
+          <MenuIcon color="white" />
         </Flex>
         <Flex className="gap-[6px]" alignItems="center">
           <Text medium className="text-white text-[22px] md:text-[32px]">
@@ -253,9 +232,9 @@ function Header() {
           className="cursor-pointer"
           justifyContent="end"
         >
-          <CloseIcon />
+          <X />
         </Flex>
-        <Flex justifyContent="center" className="rounded-4xl bg-[#E3C4F6]">
+        <Flex justifyContent="center" className="rounded-4xl ">
           <img src={DentImg} alt="Logo" className="w-[150px]" />
         </Flex>
         <Flex alignItems="center" justifyContent="center" className="gap-[8px]">
@@ -292,7 +271,7 @@ function Header() {
                   size={"sm"}
                   className={`w-full ${
                     activeNavIndex === realIndex
-                      ? "bg-[#7C22B4] text-white"
+                      ? "bg-[#7900B2] text-white"
                       : ""
                   }`}
                   onClick={() => handleNavbarClickMobile(realIndex, list.func)}
@@ -308,76 +287,54 @@ function Header() {
         </ul>
       </Flex>
 
-      {/******** Tablet, Desktop ********/}
+      {/******** Desktop ********/}
       <Flex
         justifyContent="between"
-        backgroundColor="secondary"
-        className={`relative hidden lg:flex px-6 py-4 transition-all duration-300 ${
-          collapsed ? "w-[80px]" : "w-[370px]"
-        } h-screen shadow-[${colors.primary}] shadow-xl`}
+        className={`bg-[#4B006E] relative hidden xl:flex px-6 py-4 transition-all duration-300 h-screen shadow-[${colors.primary}] shadow-xl`}
         direction="column"
       >
-        {/* ปุ่มย่อ/ขยาย header เฉพาะช่วงหน้าจอ 1024px <= width < 1280px */}
-        <Button
-          className={`absolute  ${
-            collapsed ? "left-15 top-4" : "left-[95%] top-2"
-          } -translate-x-full xl:hidden bg-[#A861D4] text-white rounded-full p-2 z-10 transition-all duration-200 shadow-none`}
-          onClick={() => setCollapsed((prev) => !prev)}
-          aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
-        >
-          {collapsed ? <LeftArrow /> : <RightArrow />}
-        </Button>
-
         <Flex direction="column" className="gap-[28px]">
           <Flex
             direction="column"
             justifyContent="center"
             alignItems="center"
             textAlign="center"
-            className={`p-5 gap-[8px]  ${collapsed ? "p-2" : ""}`}
+            className={`p-5 gap-[8px]`}
           >
             <Text
               bold
-              className={`text-white ${
-                collapsed ? "text-[20px] hidden" : "text-[32px]"
-              } text-shadow-sm text-shadow-black/40`}
+              className={`text-white text-shadow-sm text-shadow-black/40 text-[24px]`}
             >
               e-Chart
             </Text>
-            {!collapsed && (
-              <img
-                src={DentImg}
-                alt="Logo"
-                className="w-[220px] rounded-[120px] bg-white"
-              />
-            )}
-            {!collapsed && (
-              <Text semibold className="text-white text-[24px]">
-                {users}
-              </Text>
-            )}
+            <img
+              src={DentImg}
+              alt="Logo"
+              className="w-[150px] h-[150px] rounded-full bg-white object-cover"
+            />
+            <Text semibold className="text-white text-[24px]">
+              {users}
+            </Text>
             <Flex alignItems="center" className="gap-[8px]">
-              <Text className="text-white ">{!collapsed && "บทบาท:"}</Text>
+              <Text className="text-white ">{"บทบาท:"}</Text>
               {roleName === "Administrator" ? (
-                !collapsed && (
-                  <Select value={selectedRole} onValueChange={setSelectedRole}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>บทบาท</SelectLabel>
-                        {roleOptions.map((option, index) => (
-                          <SelectItem key={index} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger className="border-[#8105bb]">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>บทบาท</SelectLabel>
+                      {roleOptions.map((option, index) => (
+                        <SelectItem key={index} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               ) : (
-                <Text className="text-white">{!collapsed && roleName}</Text>
+                <Text className="text-white">{roleName}</Text>
               )}
             </Flex>
           </Flex>
@@ -390,20 +347,16 @@ function Header() {
               return (
                 <li
                   key={index}
-                  className={`py-2 px-1 rounded-lg transition-all transform duration-200 hover:bg-[#7C22B4] ${
+                  className={`py-2 px-1 rounded-lg transition-all transform duration-200 hover:bg-[#7900B2] ${
                     activeNavIndex === realIndex
-                      ? "bg-[#7C22B4] text-white"
+                      ? "bg-[#7900B2] text-white"
                       : ""
                   }`}
                   onClick={() => handleNavbarClick(realIndex, list.func)}
                 >
-                  <Flex className={`gap-[8px]`}>
+                  <Flex alignItems="center" className={`gap-[8px]`}>
                     {list.icon}
-                    {!collapsed && (
-                      <Text className="text-white text-[20px]">
-                        {list.desc}
-                      </Text>
-                    )}
+                    <Text className="text-white text-[20px]">{list.desc}</Text>
                   </Flex>
                 </li>
               );
@@ -413,15 +366,17 @@ function Header() {
         <Flex direction="column" className="gap-[12px]">
           <Flex className="py-0.5 bg-white"></Flex>
           <Flex
-            className={`p-2 rounded-lg  transition-all transform duration-200 hover:bg-[#7C22B4] hover:cursor-pointer`}
+            className={`p-2 rounded-lg  transition-all transform duration-200 hover:bg-[#7900B2] hover:cursor-pointer`}
           >
-            <Flex className="gap-[8px]" onClick={handleSignout}>
-              <LogoutIcon />
-              {!collapsed && (
-                <Text medium className="text-white text-[20px]">
-                  ลงชื่อออก
-                </Text>
-              )}
+            <Flex
+              alignItems="center"
+              className="gap-[8px]"
+              onClick={handleSignout}
+            >
+              <LogOutIcon color="white" />
+              <Text medium className="text-white text-[20px]">
+                ลงชื่อออก
+              </Text>
             </Flex>
           </Flex>
         </Flex>

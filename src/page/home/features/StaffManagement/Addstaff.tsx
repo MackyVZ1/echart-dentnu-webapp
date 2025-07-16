@@ -1,7 +1,7 @@
-import { CloseIcon } from "@/assets/svg";
 import Flex from "@/components/Flex";
 import Text from "@/components/Text";
 import Addstaffform from "./Addstaffform";
+import { X } from "lucide-react";
 
 interface Props {
   onClose: () => void;
@@ -26,7 +26,7 @@ function Addstaff({ onClose, onUserAdded, onEdit, userId }: Props) {
           className="hover:cursor-pointer"
           onClick={onClose}
         >
-          <CloseIcon color="grey" />
+          <X color="grey" />
         </Flex>
         <Flex justifyContent="center">
           <Text semibold className="text-black text-[18px] lg:text-[24px]">

@@ -7,7 +7,7 @@ function Login() {
       justifyContent="center"
       alignItems="center"
       direction="column"
-      className="gap-[16px]  px-[10px] md:gap-[36px]"
+      className="gap-[16px]  p-[10px] md:gap-[36px] h-screen"
     >
       <DentLogo />
       <LoginCard />

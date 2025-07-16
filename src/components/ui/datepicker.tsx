@@ -45,7 +45,7 @@ export function Datepicker({
         <Button
           variant="outline"
           id="date"
-          className={` justify-between font-normal items-center  border-[#A861D4] border-3 p-[22px] ${className}`}
+          className={` justify-between font-normal items-center  border-[#4B006E] border-3 p-[22px] ${className}`}
           disabled={disabled}
         >
           <Text
@@ -57,7 +57,7 @@ export function Datepicker({
               ? selectedDate.toLocaleDateString("th-TH")
               : placeholder}
           </Text>
-          <CalendarIcon className="mr-2 h-4 w-4 text-[#A861D4]" />
+          <CalendarIcon className="mr-2 h-4 w-4 text-[#4B006E]" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">

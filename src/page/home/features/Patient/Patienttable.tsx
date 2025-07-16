@@ -22,9 +22,11 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { AddIcon, DeleteIcon, InfoIcon, ReferIcon } from "@/assets/svg";
+import { ReferIcon } from "@/assets/svg";
 import { useNavigate } from "react-router-dom";
 import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
+import { CirclePlusIcon, Info, Search, SquareXIcon } from "lucide-react";
+import Referpatient from "./Referpatient";
 
 type Patient = {
   dn: string | null;
@@ -70,6 +72,13 @@ function Patienttable() {
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [selectedDN, setSelectedDN] = useState<string | null>("");
+
+  const [referOn, setReferOn] = useState<boolean>(false);
+
+  const handleReferOn = (dn: string | null = null) => {
+    setSelectedDN(dn);
+    setReferOn(!referOn);
+  };
 
   const handleModal = (dn: string | null = null) => {
     setSelectedDN(dn);
@@ -176,17 +185,22 @@ function Patienttable() {
       >
         <Text className="lg:text-[24px] lg:min-w-[120px]">ค้นหาคนไข้</Text>
 
-        <Flex className="w-full">
+        <Flex
+          alignItems="center"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
+        >
+          <Search color="#4B006E" />
           <Input
             name="search"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="DN, ชื่อ - สกุล, เลขประจำตัวประชาชน"
+            className="border-none focus:outline-none focus-visible:ring-0 shadow-none"
           />
         </Flex>
 
         <Button size={"sm"} className="max-lg:w-full" onClick={handleAddButton}>
-          <AddIcon />
+          <CirclePlusIcon />
           <Text medium className="md:text-[18px] lg:text-[20px]">
             เพิ่มคนไข้ใหม่
           </Text>
@@ -194,12 +208,12 @@ function Patienttable() {
       </Flex>
       <Flex direction="column" className="w-full">
         {/**Table */}
-        <div className="border-[3px] border-[#A861D4] rounded-2xl overflow-hidden w-full">
+        <div className="border-[3px] border-[#4B006E] rounded-2xl overflow-hidden w-full">
           <ScrollArea className="h-full">
             <ScrollBar orientation="horizontal" />
             <Table>
               {/* Sticky Header */}
-              <TableHeader className="bg-[#A861D4] sticky top-0 z-10">
+              <TableHeader className="bg-[#4B006E] sticky top-0 z-10">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="p-4 min-w-[120px] text-center">
                     <Text className="text-white text-[18px]" semibold>
@@ -240,17 +254,20 @@ function Patienttable() {
                     </TableCell>
                     <TableCell className="p-4">
                       <Flex justifyContent="center" className="gap-2">
-                        <Button>
+                        <Button
+                          className="w-[100px] p-0"
+                          onClick={() => handleReferOn(patient.dn)}
+                        >
                           <ReferIcon />
                         </Button>
                         <Button onClick={() => handlePatientInfo(patient.dn)}>
-                          <InfoIcon />
+                          <Info />
                         </Button>
                         <Button
                           variant={"destructive"}
                           onClick={() => handleModal(patient.dn)}
                         >
-                          <DeleteIcon />
+                          <SquareXIcon />
                         </Button>
                       </Flex>
                     </TableCell>
@@ -313,6 +330,10 @@ function Patienttable() {
           </Text>
         </Flex>
       </Flex>
+
+      {referOn == true && (
+        <Referpatient onClose={handleReferOn} dn={selectedDN} />
+      )}
 
       {verifyOn == true && (
         <VerifyModal
