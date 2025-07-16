@@ -1,4 +1,4 @@
-import DentImg from "@/assets/logo/dent_logo_nobackground.png";
+import DentImg from "@/assets/png/dentnu_logo.png";
 import Text from "@/components/Text";
 import Flex from "@/components/Flex";
 function DentLogo() {

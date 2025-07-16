@@ -35,7 +35,7 @@ function Home() {
   return (
     <Flex
       direction="column"
-      className="lg:flex-row lg:h-screen lg:overflow-hidden"
+      className="xl:flex-row lg:h-screen lg:overflow-hidden"
     >
       <Header />
       <Flex className="w-full h-full p-[16px] md:p-[20px] lg:p-[42px] lg:overflow-y-auto">

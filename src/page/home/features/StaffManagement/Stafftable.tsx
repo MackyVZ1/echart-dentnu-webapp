@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { DeleteIcon, EditIcon, SearchIcon } from "@/assets/svg";
 import Text from "@/components/Text";
 import axios from "axios";
 import Flex from "@/components/Flex";
@@ -35,6 +34,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Search, SquarePenIcon, SquareXIcon } from "lucide-react";
 
 type Staff = {
   userId: number | null;
@@ -56,6 +56,8 @@ interface Props {
   refreshTrigger?: number; // เพิ่ม prop สำหรับ trigger การรีเฟรช
   onEdit?: boolean;
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function getPagination(current: number, total: number) {
   const delta = 2;
@@ -171,7 +173,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser/${selectedId}`,
+        `${API_BASE_URL}/api/tbdentalrecorduser/${selectedId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -236,7 +238,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       }
 
       const response = await axios.get(
-        `https://echart-dentnu-api.onrender.com/api/tbdentalrecorduser?${queryParams.toString()}`,
+        `${API_BASE_URL}/api/tbdentalrecorduser?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -272,9 +274,9 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       <Flex direction="column" className="gap-4 lg:flex-row">
         <Flex
           alignItems="center"
-          className="p-2 border-[3px] border-[#A861D4] rounded-[8px] w-full"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
         >
-          <SearchIcon />
+          <Search color="#4B006E" />
           <Input
             name="search"
             value={keyword}
@@ -285,7 +287,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
         </Flex>
         <Flex
           alignItems="center"
-          className="p-2 border-[3px] border-[#A861D4] rounded-[8px] w-full"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
         >
           <Select onValueChange={(e) => setRoleFilter(Number(e))}>
             <SelectTrigger className="border-none w-full p-4 shadow-none focus-visible:ring-0">
@@ -305,7 +307,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
         </Flex>
         <Flex
           alignItems="center"
-          className="p-2 border-[3px] border-[#A861D4] rounded-[8px] w-full"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
         >
           <Select onValueChange={setClinicFilter}>
             <SelectTrigger className="border-none w-full p-4 shadow-none focus-visible:ring-0">
@@ -326,12 +328,12 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       </Flex>
 
       {/**Table */}
-      <div className="border-[3px] border-[#A861D4] rounded-2xl overflow-hidden">
+      <div className="border-[3px] border-[#4B006E] rounded-2xl overflow-hidden">
         <ScrollArea className="h-full">
           <ScrollBar orientation="horizontal" />
           <Table>
             {/* Sticky Header */}
-            <TableHeader className="bg-[#A861D4] sticky top-0 z-10">
+            <TableHeader className="bg-[#4B006E] sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="p-4 min-w-[120px]">
                   <Text className="text-white text-[18px]" semibold>
@@ -398,13 +400,13 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
                         className="bg-[#DEA344] hover:bg-[#DEA344]/70"
                         onClick={() => handleEdit(staff.userId)}
                       >
-                        <EditIcon />
+                        <SquarePenIcon />
                       </Button>
                       <Button
                         variant={"destructive"}
                         onClick={() => handleModal(staff.userId)}
                       >
-                        <DeleteIcon />
+                        <SquareXIcon />
                       </Button>
                     </Flex>
                   </TableCell>

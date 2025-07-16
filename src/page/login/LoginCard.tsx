@@ -57,7 +57,7 @@ function LoginCard() {
         passw: values.password,
       });
 
-      console.log(response?.data);
+      // console.log(response?.data);
 
       if (response?.data) {
         const user = response?.data;
@@ -76,19 +76,29 @@ function LoginCard() {
         }, 1000);
       }
     } catch (e: any) {
+      let errorStatus = e?.response?.status;
       let errorMessage = e?.response?.data;
-      // ที่console.error(errorMessage);
-      if (errorMessage == "Username and password are required") {
-        errorMessage = "กรุณากรอกชื่อผู้ใช้\nและรหัสผ่าน";
-        setError(errorMessage);
-      } else if (errorMessage == "Wrong password") {
-        errorMessage = "รหัสผ่านผิด";
-        setError(errorMessage);
-      } else if (errorMessage == "Tbdentalrecorduser not found") {
-        errorMessage = "ไม่พบผู้ใช้";
-        setError(errorMessage);
-      } else errorMessage = "เซิร์ฟเวอร์ขัดข้อง";
-      setError(errorMessage);
+      if (errorStatus) {
+        // console.error(errorMessage);
+        // console.error(errorMessage);
+        if (errorStatus == 401) {
+          setError("ไม่ได้รับอนุญาตให้เข้าใช้งาน");
+          setModalOn(true);
+
+          setTimeout(() => {
+            setError("");
+            setModalOn(false);
+          }, 2000);
+
+          nav("/home");
+        } else if (errorStatus == 400) {
+          if (errorMessage == "Username and password are required")
+            setError("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
+          else setError("รหัสผ่านผิด");
+        } else if (errorStatus == 404) {
+          setError("ไม่พบผู้ใช้");
+        } else setError("เซิร์ฟเวอร์ขัดข้อง");
+      }
       setModalOn(true);
 
       setTimeout(() => {
@@ -102,7 +112,7 @@ function LoginCard() {
     <>
       <LogoBackground>
         <Card
-          className={`w-[340px] p-[20px] rounded-4xl bg-[#A861D4]/60 gap-[20px] shadow-lg shadow-[#7C22B4] 
+          className={`w-[340px] p-[20px] rounded-4xl bg-[#4B006E]/60 gap-[20px] shadow-lg shadow-[#75389b] 
         md:w-[600px] md:h-[480px] md:p-[40px]
         lg:h-[550px] border-0`}
         >
@@ -174,7 +184,7 @@ function LoginCard() {
                       variant="default"
                       size="lg"
                       type="submit"
-                      className="bg-[#9C53C9] hover:bg-[#9C53C9]/70"
+                      className="bg-[#4B006E] hover:bg-[#4B006E]/70"
                     >
                       <Text className="text-white text-[16px] lg:text-[20px]">
                         ลงชื่อเข้าใช้
