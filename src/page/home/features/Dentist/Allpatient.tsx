@@ -32,6 +32,7 @@ function Allpatient() {
   };
 
   const handleGetCaseByTeacher = () => {
+    setError("");
     setVerifyOn(!verifyOn);
     setSuccessMessage("รับเคสสำเร็จ");
     setModalOn(true);

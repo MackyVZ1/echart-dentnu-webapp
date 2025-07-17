@@ -42,6 +42,7 @@ function Referpatient({ onClose, dn }: Props) {
   };
 
   const handleReferPatient = () => {
+    setError("");
     setVerifyOn(!verifyOn);
     setSuccessMessage("ส่งตัวคนไข้สำเร็จ");
     setModalOn(true);
