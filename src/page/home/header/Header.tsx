@@ -20,9 +20,12 @@ import {
 } from "@/components/ui/select";
 import {
   CircleGaugeIcon,
+  ClipboardPlusIcon,
+  DoorOpenIcon,
   LogOutIcon,
   MenuIcon,
   UsersIcon,
+  UsersRoundIcon,
   X,
 } from "lucide-react";
 
@@ -128,6 +131,24 @@ function Header() {
       roles: ["เวชระเบียน"],
     },
     {
+      icon: <DoorOpenIcon color="white" />,
+      func: () => nav("/home/referralclinic"),
+      desc: "รับ-ส่งตัวคนไข้",
+      roles: ["ผู้ใช้งานทั่วไป", "เวชระเบียน"],
+    },
+    {
+      icon: <UsersRoundIcon color="white" />,
+      func: () => nav("/home/allpatients"),
+      desc: "คนไข้ทั้งหมด",
+      roles: ["อาจารย์"],
+    },
+    {
+      icon: <ClipboardPlusIcon color="white" />,
+      func: () => nav("/home/patientqueue"),
+      desc: "คนไข้รอรับการรักษา",
+      roles: ["อาจารย์", "ปริญญาตรี", "ปริญญาโท"],
+    },
+    {
       icon: <LogOutIcon color="white" />,
       func: handleSignout,
       desc: "ลงชื่อออก",
@@ -161,7 +182,9 @@ function Header() {
       "/home/patientmanagement": "จัดการข้อมูลคนไข้",
       "/home/searchpatient": "ค้นหาคนไข้",
       "/home/chartreserve": "จอง/คืนชาร์ต",
-      "/home/refer": "Refer",
+      "/home/referralclinic": "รับ-ส่งตัวคนไข้",
+      "/home/allpatients": "คนไข้ทั้งหมด",
+      "/home/patientqueue": "คนไข้รอรับการรักษา",
     };
 
     const featureDesc = pathToFeatureMap[path as keyof typeof pathToFeatureMap];

@@ -27,6 +27,12 @@ function Home() {
           nav("/home", { replace: true });
         } else if (roleName === "เวชระเบียน") {
           nav("/home/patientmanagement", { replace: true });
+        } else if (
+          roleName === "อาจารย์" ||
+          roleName === "ปริญญาตรี" ||
+          roleName === "ปริญญาโท"
+        ) {
+          nav("/home/allpatients"), { replace: true };
         }
       }
     }
@@ -38,7 +44,7 @@ function Home() {
       className="xl:flex-row lg:h-screen lg:overflow-hidden"
     >
       <Header />
-      <Flex className="w-full h-full p-[16px] md:p-[20px] lg:p-[42px] lg:overflow-y-auto">
+      <Flex className="w-full h-full px-[16px] py-[32px] md:p-[20px] lg:p-[42px] lg:overflow-y-auto">
         <Outlet />
       </Flex>
       {showModal && (

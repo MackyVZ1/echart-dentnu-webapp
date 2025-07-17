@@ -121,14 +121,14 @@ export function VerifyModal({
     >
       <Flex className="gap-4" justifyContent="center">
         <Button
-          className="group bg-white rounded-xl border border-[#4B006E] ;g:w-[201px] p-6 hover:bg-[#848484] hover:border-[#848484]"
+          className="group bg-white rounded-xl border border-[#4B006E] lg:w-[201px] p-6 hover:bg-[#848484] hover:border-[#848484]"
           onClick={onCancel}
         >
           <Text className="lg:text-[20px] text-[#4B006E] group-hover:text-white">
             {cancelText}
           </Text>
         </Button>
-        <Button className="rounded-xl lg:w-[201px] p-6 " onClick={onVerify}>
+        <Button className="rounded-xl lg:w-[201px] p-6" onClick={onVerify}>
           <Text className="lg:text-[20px]">{verifyText}</Text>
         </Button>
       </Flex>

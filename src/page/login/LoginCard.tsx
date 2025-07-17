@@ -41,6 +41,7 @@ function LoginCard() {
   const nav = useNavigate();
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [isLoginSuccess, setIsLoginSuccess] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,13 +52,14 @@ function LoginCard() {
   });
 
   const handleSignup = async (values: z.infer<typeof formSchema>) => {
+    setError("");
+    setIsLoginSuccess(false);
+    setModalOn(false);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         users: values.username,
         passw: values.password,
       });
-
-      // console.log(response?.data);
 
       if (response?.data) {
         const user = response?.data;
@@ -68,43 +70,86 @@ function LoginCard() {
         sessionStorage.setItem("roleName", user.role);
         sessionStorage.setItem("roleId", user.roleID);
 
-        setModalOn(true);
+        setIsLoginSuccess(true); // ตั้งค่าเป็น true เมื่อเข้าสู่ระบบสำเร็จ
+        setModalOn(true); // เปิด modal สำหรับ SuccessModal
 
         setTimeout(() => {
           setModalOn(false);
           nav("/home");
         }, 1000);
+      } else {
+        // กรณีที่ response ไม่มีข้อมูล (ไม่น่าจะเกิดขึ้นถ้าสำเร็จ) หรือมี response แต่ไม่มี data
+        setError("เกิดข้อผิดพลาดที่ไม่รู้จัก");
+        setModalOn(true);
+        setTimeout(() => {
+          setError("");
+          setModalOn(false);
+        }, 2000);
       }
     } catch (e: any) {
-      let errorStatus = e?.response?.status;
-      let errorMessage = e?.response?.data;
-      if (errorStatus) {
-        // console.error(errorMessage);
-        // console.error(errorMessage);
-        if (errorStatus == 401) {
-          setError("ไม่ได้รับอนุญาตให้เข้าใช้งาน");
-          setModalOn(true);
+      // ตรวจสอบชนิดของ error
+      if (axios.isAxiosError(e)) {
+        // นี่คือข้อผิดพลาดจาก Axios
+        if (e.response) {
+          // มี response กลับมา (เช่น 4xx, 5xx)
+          let errorStatus = e.response.status;
+          let errorMessage = e.response.data;
 
+          if (errorStatus === 400) {
+            if (errorMessage === "Username and password are required") {
+              setError("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
+            } else {
+              setError("รหัสผ่านผิด");
+            }
+            setModalOn(true);
+            setTimeout(() => {
+              setError("");
+              setModalOn(false);
+            }, 2000);
+          } else if (errorStatus === 404) {
+            setError("ไม่พบผู้ใช้");
+            setModalOn(true);
+            setTimeout(() => {
+              setError("");
+              setModalOn(false);
+            }, 2000);
+          } else {
+            // ข้อผิดพลาด Server อื่นๆ ที่มี response
+            setError(`เซิร์ฟเวอร์ขัดข้อง (สถานะ: ${errorStatus})`);
+            setModalOn(true);
+            setTimeout(() => {
+              setError("");
+              setModalOn(false);
+            }, 2000);
+          }
+        } else if (e.request) {
+          // นี่คือกรณีที่ `err_network_refused` หรือไม่มีการเชื่อมต่อเลย
+          setError(
+            "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือลองใหม่อีกครั้ง"
+          );
+          setModalOn(true);
           setTimeout(() => {
             setError("");
             setModalOn(false);
           }, 2000);
-
-          nav("/home");
-        } else if (errorStatus == 400) {
-          if (errorMessage == "Username and password are required")
-            setError("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
-          else setError("รหัสผ่านผิด");
-        } else if (errorStatus == 404) {
-          setError("ไม่พบผู้ใช้");
-        } else setError("เซิร์ฟเวอร์ขัดข้อง");
+        } else {
+          // ข้อผิดพลาดอื่นๆ ที่ไม่ใช่ Axios error หรือเป็น error ในการตั้งค่า request
+          setError("เกิดข้อผิดพลาดที่ไม่รู้จักในการส่งคำขอ");
+          setModalOn(true);
+          setTimeout(() => {
+            setError("");
+            setModalOn(false);
+          }, 2000);
+        }
+      } else {
+        // ข้อผิดพลาดที่ไม่ใช่ Axios error (เช่น TypeError)
+        setError("เกิดข้อผิดพลาดที่ไม่คาดคิด");
+        setModalOn(true);
+        setTimeout(() => {
+          setError("");
+          setModalOn(false);
+        }, 2000);
       }
-      setModalOn(true);
-
-      setTimeout(() => {
-        setError("");
-        setModalOn(false);
-      }, 2000);
     }
   };
 
@@ -196,13 +241,13 @@ function LoginCard() {
             </Form>
           </CardContent>
         </Card>
-
-        {/* </Flex> */}
       </LogoBackground>
-      {modalOn && !error && (
+      {modalOn && isLoginSuccess && (
         <SuccessModal message="เข้าสู่ระบบสำเร็จ" isVisible={modalOn} />
       )}
-      {modalOn && !!error && <ErrorModal message={error} isVisible={modalOn} />}
+      {modalOn && !isLoginSuccess && error && (
+        <ErrorModal message={error} isVisible={modalOn} />
+      )}
     </>
   );
 }
