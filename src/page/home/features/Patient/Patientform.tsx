@@ -387,7 +387,7 @@ function Patientform() {
   }, [watchedBirthdate, watchedPriv]);
 
   return (
-    <Flex direction="column" className="xl:h-screen ">
+    <Flex direction="column">
       <ScrollArea className="py-4">
         <Form {...form}>
           <form
@@ -1600,17 +1600,11 @@ function Patientform() {
             </Flex>
 
             {verifyOn == true && (
-              <Flex
-                className="fixed inset-0 z-50 bg-black/40"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <VerifyModal
-                  message="ยืนยันการเพิ่มคนไข้"
-                  onCancel={handleModal}
-                  onVerify={handleAddPatient}
-                />
-              </Flex>
+              <VerifyModal
+                message="ยืนยันการเพิ่มคนไข้"
+                onCancel={handleModal}
+                onVerify={handleAddPatient}
+              />
             )}
 
             {modalOn && !error && (

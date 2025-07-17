@@ -274,7 +274,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       <Flex direction="column" className="gap-4 lg:flex-row">
         <Flex
           alignItems="center"
-          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full "
         >
           <Search color="#4B006E" />
           <Input
@@ -328,7 +328,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       </Flex>
 
       {/**Table */}
-      <div className="border-[3px] border-[#4B006E] rounded-2xl overflow-hidden">
+      <div className="border-[3px] border-[#4B006E] rounded-2xl overflow-hidden h-full w-full">
         <ScrollArea className="h-full">
           <ScrollBar orientation="horizontal" />
           <Table>

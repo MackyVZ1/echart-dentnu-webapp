@@ -158,8 +158,8 @@ function Patienttable() {
       // console.log("Patient API Response:", response.data.data);
 
       setPatient(response.data.data ?? []);
-      setTotal(response?.data?.Total ?? 0); //
-      setPageCount(response?.data?.PageCount ?? 1);
+      setTotal(response?.data?.total ?? 0); //
+      setPageCount(response?.data?.pageCount ?? 1);
     } catch (e: any) {
       let errorMessage = e.response?.data?.message;
       console.error(errorMessage);
@@ -187,7 +187,7 @@ function Patienttable() {
 
         <Flex
           alignItems="center"
-          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full"
+          className="p-2 border-[3px] border-[#4B006E] rounded-[8px] w-full h-full"
         >
           <Search color="#4B006E" />
           <Input

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
 
 interface Props {
   onClose: () => void;
@@ -21,6 +22,10 @@ interface Props {
 function Referpatient({ onClose, dn }: Props) {
   const [referFrom, setReferFrom] = useState<string>("");
   const [referTo, setReferTo] = useState<string>("");
+  const [modalOn, setModalOn] = useState<boolean>(false);
+  const [verifyOn, setVerifyOn] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const referFromOptions = [
     { value: "เวชระเบียน", label: "เวชระเบียน" },
@@ -31,6 +36,20 @@ function Referpatient({ onClose, dn }: Props) {
     { value: "เวชระเบียน", label: "เวชระเบียน" },
     { value: "คลินิกรังสีเอกซ์เรย์", label: "คลินิกรังสีเอกซ์เรย์" },
   ];
+
+  const handleModal = () => {
+    setVerifyOn(!verifyOn);
+  };
+
+  const handleReferPatient = () => {
+    setError("");
+    setVerifyOn(!verifyOn);
+    setSuccessMessage("ส่งตัวคนไข้สำเร็จ");
+    setModalOn(true);
+    setTimeout(() => {
+      setModalOn(false);
+    }, 1000);
+  };
 
   return (
     <Flex
@@ -96,7 +115,7 @@ function Referpatient({ onClose, dn }: Props) {
               </Select>
             </Flex>
             <Flex alignItems="center" justifyContent="center">
-              <Button size={"sm"} className="w-[120px]">
+              <Button size={"sm"} className="w-[120px]" onClick={handleModal}>
                 <Text>ยืนยัน</Text>
               </Button>
             </Flex>
@@ -161,13 +180,32 @@ function Referpatient({ onClose, dn }: Props) {
               </Select>
             </Flex>
             <Flex alignItems="center" justifyContent="center">
-              <Button size={"sm"} className="w-[120px]">
+              <Button size={"sm"} className="w-[120px]" onClick={handleModal}>
                 <Text>ยืนยัน</Text>
               </Button>
             </Flex>
           </Flex>
         </CardContent>
       </Card>
+
+      {verifyOn == true && (
+        <Flex
+          className="fixed inset-0 z-50 bg-black/40"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <VerifyModal
+            message="ยืนยันการส่งตัว"
+            onCancel={handleModal}
+            onVerify={handleReferPatient}
+          />
+        </Flex>
+      )}
+
+      {modalOn && !error && (
+        <SuccessModal message={successMessage} isVisible={modalOn} />
+      )}
+      {modalOn && !!error && <ErrorModal message={error} isVisible={modalOn} />}
     </Flex>
   );
 }

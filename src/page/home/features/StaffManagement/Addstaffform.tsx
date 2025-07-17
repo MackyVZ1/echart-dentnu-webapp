@@ -570,17 +570,11 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
       </form>
 
       {verifyOn == true && (
-        <Flex
-          className="fixed inset-0 z-50 bg-black/40"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <VerifyModal
-            message={onEdit ? "ยืนยันการอัปเดทข้อมูล" : "ยืนยันการเพิ่มข้อมูล"}
-            onCancel={handleModal}
-            onVerify={handleAddOrUpdateStaff}
-          />
-        </Flex>
+        <VerifyModal
+          message={onEdit ? "ยืนยันการอัปเดทข้อมูล" : "ยืนยันการเพิ่มข้อมูล"}
+          onCancel={handleModal}
+          onVerify={handleAddOrUpdateStaff}
+        />
       )}
 
       {modalOn && !error && (
