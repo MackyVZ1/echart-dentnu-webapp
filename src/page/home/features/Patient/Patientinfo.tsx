@@ -834,17 +834,11 @@ function PatientInfo() {
         </Flex>
 
         {verifyOn == true && (
-          <Flex
-            className="fixed inset-0 z-50 bg-black/40"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <VerifyModal
-              message="ยืนยันการอัปเดทข้อมูลคนไข้"
-              onCancel={handleModal}
-              onVerify={handleSave}
-            />
-          </Flex>
+          <VerifyModal
+            message="ยืนยันการอัปเดทข้อมูลคนไข้"
+            onCancel={handleModal}
+            onVerify={handleSave}
+          />
         )}
 
         {modalOn && !error && (

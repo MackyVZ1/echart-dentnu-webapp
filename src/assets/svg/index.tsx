@@ -117,3 +117,34 @@ export function ReferIcon() {
     </svg>
   );
 }
+
+export function AcceptPatientIcon() {
+  return (
+    <svg
+      width="146"
+      height="146"
+      viewBox="0 0 146 146"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-[30px] h-[30px]"
+    >
+      <path
+        d="M73 59.3125C85.599 59.3125 95.8125 49.099 95.8125 36.5C95.8125 23.901 85.599 13.6875 73 13.6875C60.401 13.6875 50.1875 23.901 50.1875 36.5C50.1875 49.099 60.401 59.3125 73 59.3125Z"
+        stroke="white"
+        strokeWidth="10"
+      />
+      <path
+        d="M27.375 114.062C27.375 91.25 54.75 77.5625 73 77.5625C91.25 77.5625 118.625 91.25 118.625 114.062V118.625H27.375V114.062Z"
+        stroke="white"
+        strokeWidth="10"
+      />
+      <path
+        d="M111.375 45.625L120.5 54.75L138.75 36.5"
+        stroke="white"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

@@ -8,9 +8,10 @@ import Dashboard from "@/page/home/features/Dashboard/Dashboard";
 import StaffManagement from "@/page/home/features/StaffManagement/StaffManagement";
 import Addpatient from "@/page/home/features/Patient/Addpatient";
 import PatientManagement from "./page/home/features/Patient/PatientManagement";
-import Reserveschart from "@/page/home/features/Reserveschart";
-import Refer from "@/page/home/features/Refer";
+import Refer from "@/page/home/features/ReferralClinic/Refer";
 import PatientInfo from "@/page/home/features/Patient/Patientinfo";
+import Patientqueue from "./page/home/features/Dentist/Patientqueue";
+import Allpatient from "./page/home/features/Dentist/Allpatient";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
@@ -22,8 +23,9 @@ createRoot(document.getElementById("root")!).render(
         <Route path="patientmanagement/addpatient" element={<Addpatient />} />
         <Route path="patientmanagement" element={<PatientManagement />} />
         <Route path="patient/:dn" element={<PatientInfo />} />
-        <Route path="chartreserve" element={<Reserveschart />} />
-        <Route path="refer" element={<Refer />} />
+        <Route path="referralclinic" element={<Refer />} />
+        <Route path="allpatients" element={<Allpatient />} />
+        <Route path="patientqueue" element={<Patientqueue />} />
       </Route>
     </Routes>
   </BrowserRouter>
