@@ -630,7 +630,7 @@ function Patientform() {
                 </Flex>
                 <Flex alignItems="center" className="gap-[12px]">
                   <Text className="lg:text-[22px] md:min-w-[76px] lg:min-w-[120px]">
-                    เลขประจำตัวประชาชน
+                    เลขประจำตัวประชาชน/ Passport No.
                   </Text>
                   <FormField
                     control={form.control}

@@ -263,7 +263,10 @@ function PatientInfo() {
             direction="column"
             className="border border-[#AFAFAF] rounded-[16px] w-full h-full gap-[30px] p-6 lg:p-[24px]"
           >
-            <Flex className="gap-4 lg:grid lg:grid-cols-2 w-full">
+            <Flex
+              direction="column"
+              className="gap-4 md:grid md:grid-cols-2 w-full"
+            >
               <Flex className="gap-[30px]">
                 <Text bold className="lg:text-[20px]">
                   ชื่อ
@@ -360,9 +363,12 @@ function PatientInfo() {
             </Flex>
             <Flex
               direction="column"
-              className="gap-[24px] lg:grid lg:grid-cols-3 w-full"
+              className="gap-[24px] md:flex-row md:justify-between w-full"
             >
-              <Flex className="gap-[30px] w-fit">
+              <Flex
+                direction="column"
+                className="gap-[30px] w-fit md:flex-row md:items-center"
+              >
                 <Text bold className="lg:text-[20px]">
                   เพศ
                 </Text>
@@ -389,7 +395,10 @@ function PatientInfo() {
                   <Text className="lg:text-[20px]">{patient?.sex}</Text>
                 )}
               </Flex>
-              <Flex className="gap-[30px] w-fit">
+              <Flex
+                direction="column"
+                className="gap-[30px] w-fit md:flex-row md:items-center"
+              >
                 <Text bold className="lg:text-[20px]">
                   สถานภาพ
                 </Text>
@@ -420,9 +429,15 @@ function PatientInfo() {
                   </Text>
                 )}
               </Flex>
-              <Flex className="gap-1 lg:gap-[30px] ">
-                <Text bold className="lg:text-[20px]">
-                  เลขประจำตัวประชาชน
+              <Flex
+                direction="column"
+                className="gap-1 md:gap-[30px] md:flex-row md:items-center"
+              >
+                <Text
+                  bold
+                  className="max-sm:whitespace-pre-line lg:text-[20px] xl:min-w-[220px]"
+                >
+                  {"เลขประจำตัวประชาชน/\nPassport No."}
                 </Text>
                 {onEdit ? (
                   <Input
@@ -437,23 +452,34 @@ function PatientInfo() {
             </Flex>
             <Flex
               direction="column"
-              className="gap-[24px] lg:grid lg:grid-cols-3 w-full"
+              className="gap-[24px] md:flex-row md:justify-between w-full md:items-center"
             >
-              <Flex className="gap-[30px] w-fit">
-                <Text bold className="lg:text-[20px]">
+              <Flex
+                direction="column"
+                className="gap-[30px]  md:flex-row md:items-center"
+              >
+                <Text bold className="lg:min-w-[80px] lg:text-[20px]">
                   วันเกิด
                 </Text>
-                <Text className="lg:text-[20px]">
+                <Text className="lg:text-[20px] w-[150px]">
                   {currentPatient?.birthDate}
                 </Text>
               </Flex>
-              <Flex className="gap-[30px] w-fit">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row w-fit md:items-center"
+              >
                 <Text bold className="lg:text-[20px]">
                   อายุ
                 </Text>
-                <Text className="lg:text-[20px]">{currentPatient?.age}</Text>
+                <Text className="lg:text-[20px] lg:min-w-[50px]">
+                  {currentPatient?.age}
+                </Text>
               </Flex>
-              <Flex className="gap-[30px] w-full">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row md:items-center"
+              >
                 <Text bold className="lg:text-[20px]">
                   อาชีพ
                 </Text>
@@ -464,7 +490,7 @@ function PatientInfo() {
                     }
                     value={currentPatient?.occupation || ""}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-fit">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -485,8 +511,14 @@ function PatientInfo() {
                 )}
               </Flex>
             </Flex>
-            <Flex className="gap-[30px] w-full">
-              <Text bold className="lg:text-[20px]">
+            <Flex
+              direction="column"
+              className="gap-[30px] w-full md:flex-row md:items-center"
+            >
+              <Text
+                bold
+                className="lg:text-[20px] md:min-w-[90px] lg:min-w-[120px]"
+              >
                 ที่อยู่ติดต่อได้
               </Text>
               {onEdit ? (
@@ -504,10 +536,16 @@ function PatientInfo() {
             </Flex>
             <Flex
               direction="column"
-              className="gap-[24px] lg:grid lg:grid-cols-2 w-full"
+              className="gap-[24px] md:grid md:grid-cols-2 w-full "
             >
-              <Flex className="gap-[30px]">
-                <Text bold className="lg:text-[20px]">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row md:items-center"
+              >
+                <Text
+                  bold
+                  className="lg:text-[20px] md:min-w-[90px] lg:min-w-[120px]"
+                >
                   เบอร์ติดต่อ
                 </Text>
                 {onEdit ? (
@@ -524,8 +562,14 @@ function PatientInfo() {
                   </Text>
                 )}
               </Flex>
-              <Flex className="gap-[30px]">
-                <Text bold className="lg:text-[20px]">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row md:items-center"
+              >
+                <Text
+                  bold
+                  className="lg:text-[20px] md:min-w-[100px] lg:min-w-[120px]"
+                >
                   เบอร์ที่ทำงาน
                 </Text>
                 {onEdit ? (
@@ -547,8 +591,11 @@ function PatientInfo() {
               direction="column"
               className="gap-[24px] lg:grid lg:grid-cols-2 w-full"
             >
-              <Flex className="gap-[30px]">
-                <Text bold className="lg:text-[20px]">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row md:items-center"
+              >
+                <Text bold className="lg:text-[20px] md:min-w-[120px]">
                   กรณีฉุกเฉินติดต่อ
                 </Text>
                 {onEdit ? (
@@ -565,8 +612,14 @@ function PatientInfo() {
                   </Text>
                 )}
               </Flex>
-              <Flex className="gap-[30px]">
-                <Text bold className="lg:text-[20px]">
+              <Flex
+                direction="column"
+                className="gap-[30px] md:flex-row md:items-center"
+              >
+                <Text
+                  bold
+                  className="lg:text-[20px] md:min-w-[90px] lg:min-w-[120px]"
+                >
                   เกี่ยวข้องเป็น
                 </Text>
                 {onEdit ? (
@@ -584,8 +637,11 @@ function PatientInfo() {
                 )}
               </Flex>
             </Flex>
-            <Flex className="gap-[30px] w-full">
-              <Text bold className="lg:text-[20px]">
+            <Flex
+              direction="column"
+              className="gap-[30px] w-full md:flex-row md:items-center"
+            >
+              <Text bold className="lg:text-[20px] lg:min-w-[200px]">
                 ที่อยู่ติดต่อกรณีฉุกเฉิน
               </Text>
               {onEdit ? (
@@ -602,7 +658,10 @@ function PatientInfo() {
                 </Text>
               )}
             </Flex>
-            <Flex className="gap-[30px] w-fit">
+            <Flex
+              direction="column"
+              className="gap-[30px] w-fit md:flex-row md:items-center"
+            >
               <Text bold className="lg:text-[20px]">
                 เบอร์ติดต่อฉุกเฉิน
               </Text>
@@ -620,7 +679,10 @@ function PatientInfo() {
                 </Text>
               )}
             </Flex>
-            <Flex alignItems="center" className="gap-[36px]">
+            <Flex
+              direction="column"
+              className="gap-[36px]  md:flex-row md:items-center"
+            >
               <Text bold className="lg:text-[20px]">
                 สิทธิการรักษา
               </Text>
