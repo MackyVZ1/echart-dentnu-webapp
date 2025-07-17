@@ -58,6 +58,7 @@ export function VerifyModalIcon() {
       viewBox="0 0 247 247"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className="w-[200px] h-[191px] md:w-[247px] md:h-[247px]"
     >
       <circle cx="123.5" cy="123.5" r="123.5" fill="#EBC630" />
       <path

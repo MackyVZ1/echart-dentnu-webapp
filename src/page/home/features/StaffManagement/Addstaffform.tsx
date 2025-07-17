@@ -347,25 +347,35 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
               <Text className="min-w-[90px] text-black lg:text-[20px]">
                 คำนำหน้า
               </Text>
-              <Select
-                name="title"
-                value={onEdit ? title : undefined}
-                onValueChange={(e) => setTitle(e as Staff["title"])}
-              >
-                <SelectTrigger className="rounded-[6px] w-full">
-                  <SelectValue placeholder="เลือกคำนำหน้า" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>คำนำหน้า</SelectLabel>
-                    {titleOptions.map((option, index) => (
-                      <SelectItem key={index} value={option.value.toString()}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              {title === "อื่น ๆ" ? (
+                <Input
+                  type="text"
+                  name="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value as Staff["title"])}
+                  placeholder="กรอกคำนำหน้า"
+                />
+              ) : (
+                <Select
+                  name="title"
+                  value={onEdit ? title : undefined}
+                  onValueChange={(e) => setTitle(e as Staff["title"])}
+                >
+                  <SelectTrigger className="rounded-[6px] w-full">
+                    <SelectValue placeholder="เลือกคำนำหน้า" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>คำนำหน้า</SelectLabel>
+                      {titleOptions.map((option, index) => (
+                        <SelectItem key={index} value={option.value.toString()}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
             </Flex>
             <FormField
               control={form.control}
