@@ -27,12 +27,10 @@ function Home() {
           nav("/home", { replace: true });
         } else if (roleName === "เวชระเบียน") {
           nav("/home/patientmanagement", { replace: true });
-        } else if (
-          roleName === "อาจารย์" ||
-          roleName === "ปริญญาตรี" ||
-          roleName === "ปริญญาโท"
-        ) {
-          nav("/home/allpatients"), { replace: true };
+        } else if (roleName === "อาจารย์") {
+          nav("/home/allpatients", { replace: true });
+        } else if (roleName === "ปริญญาตรี" || roleName === "ปริญญาโท") {
+          nav("/home/patientqueue", { replace: true });
         }
       }
     }

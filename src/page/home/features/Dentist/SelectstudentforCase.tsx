@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Flex from "@/components/Flex";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Text from "@/components/Text";
@@ -11,27 +14,51 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Loading from "@/components/Loading";
+
+type Student = {
+  userId: number;
+  tname: string;
+  fname: string;
+  lname: string;
+};
 
 interface Props {
   dn: string;
   onClose: () => void;
+  clinicreferId: number | null | undefined;
+  onStudentSelected: () => void;
 }
 
-function SelectstudentforCase({ dn, onClose }: Props) {
-  const [student, setStudent] = useState<string>("");
+function SelectstudentforCase({ dn, onClose, clinicreferId, onStudentSelected }: Props) {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<string>("");
+
+  // Modal State
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [verifyOn, setVerifyOn] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+  // Navigate
+  const nav = useNavigate();
+
+  // Loading State
+  const [fetchLoading, setfetchLoading] = useState<boolean>(false);
+  const [studentLoading, setstudentLoading] = useState<boolean>(false);
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const handleModal = () => {
     setVerifyOn(!verifyOn);
   };
 
-  const handleSelectPatientToDentist = () => {
-    if (!student) {
+  const handleSelectPatientToDentist = async () => {
+    if (!selectedStudent) {
       setError("กรุณาระบุนิสิตทันตแพทย์");
       setVerifyOn(!verifyOn);
 
@@ -41,22 +68,100 @@ function SelectstudentforCase({ dn, onClose }: Props) {
         setModalOn(false);
       }, 2000);
     }
-    setVerifyOn(!verifyOn);
-    setSuccessMessage("ส่งคนไข้ให้ทันตแพทย์สำเร็จ");
-    setModalOn(true);
+    setVerifyOn(false);
+    setstudentLoading(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const userId = sessionStorage.getItem("userId");
 
-    setTimeout(() => {
-      setModalOn(false);
-      onClose();
-    }, 1000);
+      const response = await axios.patch(
+        `${API_BASE_URL}/api/clinicrefer/${clinicreferId?.toString()}`,
+        {
+          instructorId: userId,
+          studentId: parseInt(selectedStudent),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status == 200) {
+        setVerifyOn(!verifyOn);
+        setSuccessMessage("ส่งคนไข้ให้ทันตแพทย์สำเร็จ");
+        setModalOn(true);
+
+        setTimeout(() => {
+          setModalOn(false);
+          onClose();
+          onStudentSelected();
+        }, 1000);
+      }
+    } catch (e: any) {
+      console.error(e.response);
+    } finally {
+      setstudentLoading(false);
+    }
   };
 
-  const studentOptions = [
-    {
-      value: "1",
-      label: "นายวีรภัทร คงกระพันพวย",
-    },
-  ];
+  const studentListFetch = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(
+        `${API_BASE_URL}/api/tbdentalrecorduser/student`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response) {
+        // console.log(response?.data);
+        setStudents(response?.data);
+      }
+    } catch (e: any) {
+      let errorMessage = e.response?.data;
+      let errorStatus = e.response?.status;
+      console.error(e.response);
+
+      if (errorStatus == 401) {
+        setError("ไม่ได้รับอนุญาตเข้าใช้งาน");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          sessionStorage.clear();
+          nav("/");
+        }, 2000);
+      } else if (errorStatus == 403) {
+        setError("ไม่มีสิทธิ์เข้าถึงฟีเจอร์นี้");
+      } else if (errorStatus == 404) {
+        if (errorMessage == "Tbdentalrecorduser not found") {
+          setError("ไม่มีข้อมูลอาจารย์");
+        }
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+      }
+
+      setModalOn(true);
+
+      setTimeout(() => {
+        setModalOn(false);
+        setError("");
+      }, 2000);
+    } finally {
+      setfetchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setfetchLoading(true);
+    studentListFetch();
+    //console.log(selectedStudent);
+  }, []);
 
   return (
     <Flex
@@ -89,15 +194,22 @@ function SelectstudentforCase({ dn, onClose }: Props) {
               justifyContent="center"
               className="gap-[12px]"
             >
-              <Select value={student} onValueChange={setStudent}>
+              <Select
+                value={selectedStudent}
+                onValueChange={setSelectedStudent}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="ระบุนิสิตทันตแพทย์" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {studentOptions.map((student, index) => (
-                      <SelectItem key={index} value={student.value}>
-                        {student.label}
+                    {students.map((student) => (
+                      <SelectItem
+                        key={student.userId}
+                        value={student.userId.toString()}
+                      >
+                        {student.tname}
+                        {student.fname} {student.lname}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -113,9 +225,16 @@ function SelectstudentforCase({ dn, onClose }: Props) {
         </CardContent>
       </Card>
 
+      {studentLoading && (
+        <Loading isOpen message="กำลังส่งเคสให้นิสิตทันตแพทย์" />
+      )}
+      {fetchLoading && (
+        <Loading isOpen message="กำลังโหลดรายชื่อนิสิตทันตแพทย์" />
+      )}
+
       {verifyOn == true && (
         <VerifyModal
-          message="ยืนยันการเลือกทันตแพทย์"
+          message="ยืนยันการเลือกนิสิตทันตแพทย์"
           onCancel={handleModal}
           onVerify={handleSelectPatientToDentist}
         />

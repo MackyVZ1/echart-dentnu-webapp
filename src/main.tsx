@@ -26,6 +26,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="referralclinic" element={<Refer />} />
         <Route path="allpatients" element={<Allpatient />} />
         <Route path="patientqueue" element={<Patientqueue />} />
+        <Route path="patientqueue/:dn" element={<PatientInfo onTreatment />} />
       </Route>
     </Routes>
   </BrowserRouter>
