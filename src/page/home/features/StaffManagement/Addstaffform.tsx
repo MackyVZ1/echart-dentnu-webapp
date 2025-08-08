@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Flex from "@/components/Flex";
 import { Input } from "@/components/ui/input";
@@ -24,36 +27,27 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CirclePlusIcon, Save } from "lucide-react";
+import { CirclePlusIcon, Save, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Loading from "@/components/Loading";
 
 type Staff = {
-  staffCode: string;
+  studentID: string;
   license: string;
-  title: "นาย" | "นางสาว" | "นาง" | "อื่น ๆ";
-  firstname: string;
-  lastname: string;
-  username: string;
-  password: string;
-  role: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  sort: 0;
-  type: "ไม่ระบุ";
-  clinic:
-    | "1"
-    | "2"
-    | "3"
-    | "4"
-    | "5"
-    | "6"
-    | "7"
-    | "8"
-    | "9"
-    | "10"
-    | "11"
-    | "12"
-    | "13"
-    | "14"
-    | "15"
-    | "-";
+  tname: string;
+  fname: string;
+  lname: string;
+  users: string;
+  passw: string;
+  roleID: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | null;
+  sort: number | null;
+  type: string;
+  clinicid: string | null;
+};
+
+export type Clinic = {
+  clinicid: number;
+  clinicName: string;
 };
 
 interface Props {
@@ -64,16 +58,16 @@ interface Props {
 }
 
 const formSchema = z.object({
-  firstname: z.string().min(1, {
+  fname: z.string().min(1, {
     message: "กรุณากรอกชื่อ",
   }),
-  lastname: z.string().min(1, {
+  lname: z.string().min(1, {
     message: "กรุณากรอกนามสกุล",
   }),
-  username: z.string().min(1, {
+  users: z.string().min(1, {
     message: "กรุณากรอกชื่อผู้ใช้",
   }),
-  password: z.string().min(1, {
+  passw: z.string().min(1, {
     message: "กรุณากรอกรหัสผ่าน",
   }),
 });
@@ -81,25 +75,40 @@ const formSchema = z.object({
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
-  const [staffCode, setStaffCode] = useState<Staff["staffCode"]>("");
-  const [license, setLicense] = useState<Staff["license"]>("");
-  const [title, setTitle] = useState<Staff["title"]>("นาย");
-  const [role, setRole] = useState<Staff["role"]>(1);
-  const [sort, setSort] = useState<Staff["sort"]>(0);
-  const [type, setType] = useState<Staff["type"]>("ไม่ระบุ");
-  const [clinic, setClinic] = useState<Staff["clinic"]>("1");
+  const [staff, setStaff] = useState<Staff>({
+    studentID: "",
+    license: "",
+    tname: "นาย",
+    fname: "",
+    lname: "",
+    users: "",
+    passw: "",
+    roleID: null,
+    sort: null,
+    type: "",
+    clinicid: "",
+  });
+
+  // Modal Management
   const [verifyOn, setVerifyOn] = useState<boolean>(false);
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
 
+  // Navigate
+  const nav = useNavigate();
+
+  // Loading State
+  const [fetchLoading, setfetchLoading] = useState<boolean>(false);
+  const [addLoading, setaddLoading] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      password: "",
-      firstname: "",
-      lastname: "",
+      users: staff.users,
+      passw: staff.passw,
+      fname: staff.fname,
+      lname: staff.lname,
     },
   });
 
@@ -109,6 +118,28 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
     { value: "นาง", label: "นาง" },
     { value: "อื่น ๆ", label: "อื่น ๆ" },
   ];
+
+  const clinicOptions = [
+    { value: "1", label: "Occlusion" },
+    { value: "2", label: "Oral Health Promotion" },
+    { value: "3", label: "Periodontic" },
+    { value: "4", label: "Operative" },
+    { value: "5", label: "Endodontic" },
+    { value: "6", label: "Prosthodontic" },
+    { value: "7", label: "Oral Surgery" },
+    { value: "8", label: "Oral Diagnosis" },
+    { value: "9", label: "Orthodontic" },
+    { value: "10", label: "Pedodontic" },
+    { value: "11", label: "บริการในเวลาราชการ" },
+    { value: "12", label: "Oral Radiology" },
+    { value: "13", label: "คลินิกพิเศษ" },
+    { value: "14", label: "บัณฑิตศึกษา" },
+    { value: "15", label: "รากเทียม" },
+  ];
+
+  const isCustomTitle = !titleOptions.some(
+    (option) => option.value === staff.tname
+  );
 
   const roleOptions = [
     { value: 1, label: "Administrator" },
@@ -129,24 +160,10 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
 
   const typeOptions = [{ value: "ไม่ระบุ", label: "ไม่ระบุ" }];
 
-  const clinincOptions = [
-    { value: "1", label: "Occlusion" },
-    { value: "2", label: "Oral Health Promotion" },
-    { value: "3", label: "Periodontic" },
-    { value: "4", label: "Operative" },
-    { value: "5", label: "Endodontic" },
-    { value: "6", label: "Prosthodontic" },
-    { value: "7", label: "Oral Surgery" },
-    { value: "8", label: "Oral Diagnosis" },
-    { value: "9", label: "Orthodontic" },
-    { value: "10", label: "Pedodontic" },
-    { value: "11", label: "บริการในเวลาราชการ" },
-    { value: "12", label: "Oral Radiology" },
-    { value: "13", label: "คลินิกพิเศษ" },
-    { value: "14", label: "บัณฑิตศึกษา" },
-    { value: "15", label: "รากเทียม" },
-    { value: "-", label: "ไม่ระบุ" },
-  ];
+  const updateStaff = (updates: Partial<Staff>) => {
+    const formValues = form.getValues();
+    setStaff((prev) => ({ ...prev, ...formValues, ...updates }));
+  };
 
   const handleModal = () => {
     setVerifyOn(!verifyOn);
@@ -164,29 +181,31 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
   };
 
   const handleAddOrUpdateStaff = async () => {
+    setVerifyOn(false);
+    setaddLoading(true);
     try {
       const token = sessionStorage.getItem("token");
       const formValues = form.getValues();
 
       const staffPayload = {
-        license: license,
-        fName: formValues.firstname,
-        lName: formValues.lastname,
-        studentID: staffCode,
-        roleID: role,
+        license: staff.license || null,
+        fName: formValues.fname,
+        lName: formValues.lname,
+        studentID: staff.studentID || null,
+        roleID: staff.roleID,
         status: 0,
-        users: formValues.username,
-        passw: formValues.password,
-        tName: title,
-        sort: sort === 0 ? null : sort,
-        type: type === "ไม่ระบุ" ? null : type,
-        clinicid: clinic === "-" ? null : clinic,
+        users: formValues.users,
+        passw: formValues.passw,
+        tName: staff.tname,
+        sort: staff.sort === 0 ? null : staff.sort,
+        type: staff.type === "ไม่ระบุ" ? null : staff.type,
+        clinicid: staff.clinicid || null,
       };
 
       let response;
 
       if (onEdit && user) {
-        console.log("กำลังดำเนินการอัปเดทข้อมูล...");
+        // console.log("กำลังดำเนินการอัปเดทข้อมูล...");
         response = await axios.patch(
           `${API_BASE_URL}/api/tbdentalrecorduser/${user}`,
           staffPayload,
@@ -238,79 +257,159 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
       }
     } catch (e: any) {
       let errorMessage = e.response?.data?.message;
-      if (errorMessage == "Firstname required.") {
-        setError("กรุณากรอกชื่อ");
-      } else if (errorMessage == "Role ID required.") {
-        setError("กรุณากรอกตำแหน่ง");
-      } else if (errorMessage == "Username required.") {
-        setError("กรุณากรอกชื่อผู้ใช้");
-      } else if (errorMessage == "Password required.") {
-        setError("กรุณากรอกรหัสผ่าน");
-      } else {
-        setError("เซิร์ฟเวอร์ขัดข้อง");
-      }
-      setVerifyOn(false);
-      setModalOn(true);
+      let errorStatus = e.response?.status;
 
-      setTimeout(() => {
-        setError("");
-        setModalOn(false);
-      }, 1000);
+      if (errorStatus == 400) {
+        if (errorMessage == "Firstname required.") {
+          setError("กรุณากรอกชื่อ");
+        } else if (errorMessage == "Role ID required.") {
+          setError("กรุณากรอกตำแหน่ง");
+        } else if (errorMessage == "Username required.") {
+          setError("กรุณากรอกชื่อผู้ใช้");
+        } else if (errorMessage == "Password required.") {
+          setError("กรุณากรอกรหัสผ่าน");
+        }
+        setVerifyOn(false);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else if (errorStatus == 401) {
+        setError("ไม่ได้รับอนุญาตให้ใช้งาน");
+        setVerifyOn(false);
+        setModalOn(true);
+        sessionStorage.clear();
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          nav("/");
+        }, 2000);
+      } else if (errorStatus === 403) {
+        setError("ไม่มีสิทธิ์ในการเข้าใช้ฟีเจอร์นี้");
+        setVerifyOn(false);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else if (errorStatus === 404) {
+        setError("ไม่พบข้อมูลเจ้าหน้าที่");
+        setVerifyOn(false);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+        setVerifyOn(false);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setError("");
+          setModalOn(false);
+        }, 2000);
+      }
+    } finally {
+      setaddLoading(false);
+    }
+  };
+
+  const staffFetch = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(
+        `${API_BASE_URL}/api/tbdentalrecorduser/${user}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // console.log(response?.data);
+      if (response?.data) {
+        const staffData = response?.data;
+
+        const updatedStaff: Staff = {
+          studentID: staffData.studentID || "",
+          license: staffData.license || "",
+          tname: staffData.tname || "นาย",
+          fname: staffData.fname || "",
+          lname: staffData.lname || "",
+          users: staffData.users || "",
+          passw: staffData.passw || "",
+          roleID: staffData.roleID || 1,
+          sort: staffData.sort || 0,
+          type: staffData.type || "ไม่ระบุ",
+          clinicid: staffData.clinicid,
+        };
+
+        setStaff(updatedStaff);
+      }
+    } catch (e: any) {
+      let errorMessage = e.response?.data;
+      let errorStatus = e.response?.status;
+      // console.error(errorMessage);
+      if (errorStatus == 401) {
+        setError("ไม่ได้รับอนุญาตให้ใช้งาน");
+        setModalOn(true);
+        sessionStorage.clear();
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          nav("/");
+        }, 2000);
+      } else if (errorStatus === 403) {
+        setError("ไม่มีสิทธิ์ในการเข้าใช้ฟีเจอร์นี้");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else if (errorStatus === 404) {
+        setError("ไม่พบข้อมูลเจ้าหน้าที่");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setError("");
+          setModalOn(false);
+        }, 2000);
+      }
+    } finally {
+      setfetchLoading(false);
     }
   };
 
   useEffect(() => {
+    form.setValue("fname", staff.fname);
+    form.setValue("lname", staff.lname);
+    form.setValue("users", staff.users);
+    form.setValue("passw", staff.passw);
+  }, [staff, form]);
+
+  useEffect(() => {
     if (onEdit && user) {
-      const staffFetch = async () => {
-        try {
-          const token = sessionStorage.getItem("token");
-          const response = await axios.get(
-            `${API_BASE_URL}/api/tbdentalrecorduser/${user}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          console.log(response?.data);
-          if (response?.data) {
-            setStaffCode(response?.data.studentID || "");
-            setLicense(response?.data.license || "");
-            setTitle((response?.data.tname as Staff["title"]) || "นาย");
-            setRole((response?.data.roleID as Staff["role"]) || 1);
-            setSort((response?.data.sort as Staff["sort"]) || 0);
-            setType((response?.data.type as Staff["type"]) || "ไม่ระบุ");
-            setClinic((response?.data.clinicid as Staff["clinic"]) || "1");
-
-            // Set form values for controlled inputs
-            form.setValue("firstname", response?.data.fname || "");
-            form.setValue("lastname", response?.data.lname || "");
-            form.setValue("username", response?.data.users || "");
-            form.setValue("password", response?.data.passw || "");
-          }
-        } catch (e: any) {
-          let errorMessage = e.response?.data;
-          // console.error(errorMessage);
-          if (errorMessage == "Unauthorized") {
-            setError("ไม่มีสิทธิ์เข้าถึงข้อมูล");
-          } else if (errorMessage == "Tbdentalrecorduser not found.") {
-            setError("ไม่พบผู้ใช้");
-          } else setError("เซิร์ฟเวอร์ขัดข้อง");
-
-          setVerifyOn(false);
-          setModalOn(true);
-
-          setTimeout(() => {
-            setError("");
-            setModalOn(false);
-          }, 1000);
-        }
-      };
-
+      setfetchLoading(true);
       staffFetch();
     }
-  }, [onEdit, user, form]);
+    // console.log(staff);
+  }, [onEdit, user]);
 
   return (
     <Form {...form}>
@@ -323,9 +422,9 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
               </Text>
               <Input
                 type="text"
-                name="staffcode"
-                value={staffCode}
-                onChange={(e) => setStaffCode(e.target.value)}
+                name="studentID"
+                value={staff.studentID}
+                onChange={(e) => updateStaff({ studentID: e.target.value })}
                 placeholder="68xxxxxx"
               />
             </Flex>
@@ -336,8 +435,8 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
               <Input
                 type="text"
                 name="license"
-                value={license}
-                onChange={(e) => setLicense(e.target.value)}
+                value={staff.license}
+                onChange={(e) => updateStaff({ license: e.target.value })}
                 placeholder="x-xxx-xxxxx-xx"
               />
             </Flex>
@@ -347,19 +446,27 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
               <Text className="min-w-[90px] text-black lg:text-[20px]">
                 คำนำหน้า
               </Text>
-              {title === "อื่น ๆ" ? (
-                <Input
-                  type="text"
-                  name="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value as Staff["title"])}
-                  placeholder="กรอกคำนำหน้า"
-                />
+              {staff.tname === "อื่น ๆ" || isCustomTitle ? (
+                <Flex alignItems="center" className="gap-2">
+                  <Input
+                    type="text"
+                    name="title"
+                    value={staff.tname === "อื่น ๆ" ? "" : staff.tname}
+                    onChange={(e) => updateStaff({ tname: e.target.value })}
+                    placeholder="กรอกคำนำหน้า"
+                  />
+                  <Button
+                    variant={"destructive"}
+                    onClick={() => updateStaff({ tname: "นาย" })}
+                  >
+                    <X color="white" />
+                  </Button>
+                </Flex>
               ) : (
                 <Select
                   name="title"
-                  value={onEdit ? title : undefined}
-                  onValueChange={(e) => setTitle(e as Staff["title"])}
+                  value={staff.tname}
+                  onValueChange={(e) => updateStaff({ tname: e })}
                 >
                   <SelectTrigger className="rounded-[6px] w-full">
                     <SelectValue placeholder="เลือกคำนำหน้า" />
@@ -379,7 +486,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
             </Flex>
             <FormField
               control={form.control}
-              name="firstname"
+              name="fname"
               render={({ field }) => (
                 <FormItem className="flex items-center">
                   <Text className="text-black lg:text-[20px]">ชื่อ</Text>
@@ -398,7 +505,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
             />
             <FormField
               control={form.control}
-              name="lastname"
+              name="lname"
               render={({ field }) => (
                 <FormItem className="flex items-center">
                   <Text className="text-black lg:text-[20px]">นามสกุล</Text>
@@ -419,7 +526,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
           <Flex className="gap-6 max-lg:flex-col">
             <FormField
               control={form.control}
-              name="username"
+              name="users"
               render={({ field }) => (
                 <FormItem className="flex items-center">
                   <Text className="min-w-[60px] text-black lg:text-[20px]">
@@ -440,7 +547,7 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
             />
             <FormField
               control={form.control}
-              name="password"
+              name="passw"
               render={({ field }) => (
                 <FormItem className="flex items-center">
                   <Text className="min-w-[80px] text-black lg:text-[20px]">
@@ -469,8 +576,10 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
               <Text className="text-black lg:text-[20px]">ตำแหน่ง</Text>
               <Select
                 name="role"
-                value={onEdit ? role.toString() : undefined}
-                onValueChange={(e) => setRole(Number(e) as Staff["role"])}
+                value={staff?.roleID?.toString()}
+                onValueChange={(e) =>
+                  updateStaff({ roleID: Number(e) as Staff["roleID"] })
+                }
               >
                 <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกตำแหน่ง" />
@@ -492,8 +601,8 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
 
               <Select
                 name="sort"
-                value={onEdit ? sort.toString() : undefined}
-                onValueChange={(e) => setSort(Number(e) as Staff["sort"])}
+                value={staff?.sort?.toString()}
+                onValueChange={(e) => updateStaff({ sort: Number(e) })}
               >
                 <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกประเภท" />
@@ -517,8 +626,8 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
 
               <Select
                 name="type"
-                value={onEdit ? type : undefined}
-                onValueChange={(e) => setType(e as Staff["type"])}
+                value={staff.type}
+                onValueChange={(e) => updateStaff({ type: e })}
               >
                 <SelectTrigger className="rounded-[6px] w-full">
                   <SelectValue placeholder="เลือกชนิด" />
@@ -538,19 +647,18 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
             <Flex alignItems="center" className="gap-[16px]">
               <Text className="text-black lg:text-[20px]">Clinic</Text>
               <Select
-                name="clinic"
-                value={onEdit ? clinic.toString() : undefined}
-                onValueChange={(e) => setClinic(e as Staff["clinic"])}
+                value={staff?.clinicid?.toString() || ""}
+                onValueChange={(e) => updateStaff({ clinicid: e })}
               >
-                <SelectTrigger className="rounded-[6px] w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="เลือกคลินิก" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Clinic</SelectLabel>
-                    {clinincOptions.map((option, index) => (
-                      <SelectItem key={index} value={option.value.toString()}>
-                        {option.label}
+                    {clinicOptions.map((clinic) => (
+                      <SelectItem key={clinic.value} value={clinic.value}>
+                        {clinic.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -568,6 +676,14 @@ function Addstaffform({ onClose, onUserAdded, onEdit, user }: Props) {
           </Flex>
         </Flex>
       </form>
+
+      {fetchLoading && <Loading isOpen message="กำลังโหลดเจ้าหน้าที่" />}
+      {addLoading && (
+        <Loading
+          isOpen
+          message={onEdit ? "กำลังอัปเดทเจ้าหน้าที่" : "กำลังเพิ่มเจ้าหน้าที่"}
+        />
+      )}
 
       {verifyOn == true && (
         <VerifyModal

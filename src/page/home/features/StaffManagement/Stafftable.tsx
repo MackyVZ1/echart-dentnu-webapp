@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Text from "@/components/Text";
 import axios from "axios";
@@ -35,6 +39,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Search, SquarePenIcon, SquareXIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/page/login/LoginCard";
+import Loading from "@/components/Loading";
 
 type Staff = {
   userId: number | null;
@@ -57,9 +64,7 @@ interface Props {
   onEdit?: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-function getPagination(current: number, total: number) {
+export function getPagination(current: number, total: number) {
   const delta = 2;
   const range = [];
   for (
@@ -90,8 +95,11 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
   const [verifyOn, setVerifyOn] = useState<boolean>(false);
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [fetchLoading, setfetchLoading] = useState<boolean>(false);
+  const [deleteLoading, setdeleteLoading] = useState<boolean>(false);
 
   const [keyword, setKeyword] = useState<string>("");
+  const roleName = sessionStorage.getItem("roleName");
   const [roleFilter, setRoleFilter] = useState<number>(0);
   const roleOptions = [
     { value: 0, label: "ทั้งหมด" },
@@ -127,6 +135,8 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
     { value: "14", label: "บัณฑิตศึกษา" },
     { value: "15", label: "รากเทียม" },
   ];
+
+  const nav = useNavigate();
 
   const roleNameMap: { [key: number]: string } = {};
   roleOptions.forEach((option) => {
@@ -170,6 +180,8 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
   };
 
   const handleRemoveStaff = async () => {
+    setVerifyOn(false);
+    setdeleteLoading(true);
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.delete(
@@ -205,16 +217,40 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       }
     } catch (e: any) {
       let errorMessage = e.response?.data?.message;
-      setError(errorMessage);
-      console.error(errorMessage);
+      let errorStatus = e.response?.status;
 
-      setVerifyOn(false);
-      setModalOn(true);
+      //console.error(errorStatus);
+      if (errorStatus === 401) {
+        setError("ไม่ได้รับอนุญาตให้ใช้งาน");
+        setModalOn(true);
+        sessionStorage.clear();
 
-      setTimeout(() => {
-        setError("");
-        setModalOn(false);
-      }, 1000);
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          nav("/");
+        }, 2000);
+      } else if (errorStatus === 403) {
+        setError("ไม่มีสิทธิ์ในการเข้าใช้ฟีเจอร์นี้");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else if (errorStatus === 404) {
+        setError("ไม่พบข้อมูลเจ้าหน้าที่");
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      }
+    } finally {
+      setdeleteLoading(false);
     }
   };
 
@@ -254,11 +290,46 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
       setPageCount(response?.data?.pageCount ?? 1); // เข้าถึง response.data.pageCount
     } catch (e: any) {
       let errorMessage = e.response?.data?.message;
-      console.error(errorMessage);
+      let errorStatus = e.response?.status;
+
+      //console.error(errorStatus);
+      if (errorStatus === 401) {
+        setError("ไม่ได้รับอนุญาตให้ใช้งาน");
+        setModalOn(true);
+        sessionStorage.clear();
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          nav("/");
+        }, 2000);
+      } else if (errorStatus === 403) {
+        setError("ไม่มีสิทธิ์ในการเข้าใช้ฟีเจอร์นี้");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      } else if (errorStatus === 404) {
+        setError("ไม่พบข้อมูลเจ้าหน้าที่");
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+        }, 2000);
+      }
+    } finally {
+      setfetchLoading(false);
     }
   };
 
   useEffect(() => {
+    setError("");
+    setfetchLoading(true);
     staffFetch();
   }, [page, limit, keyword, roleFilter, clinicFilter]);
 
@@ -296,8 +367,11 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>บทบาท</SelectLabel>
-                {roleOptions.map((option, index) => (
-                  <SelectItem key={index} value={option.value.toString()}>
+                {roleOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value.toString()}
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -316,8 +390,11 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>คลินิก</SelectLabel>
-                {clinincOptions.map((option, index) => (
-                  <SelectItem key={index} value={option.value.toString()}>
+                {clinincOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value.toString()}
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -335,12 +412,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
             {/* Sticky Header */}
             <TableHeader className="bg-[#4B006E] sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="p-4 min-w-[120px]">
-                  <Text className="text-white text-[18px]" semibold>
-                    userId
-                  </Text>
-                </TableHead>
-                <TableHead className="p-4 min-w-[200px]">
+                <TableHead className="p-4 min-w-[200px] text-center">
                   <Text className="text-white text-[18px]" semibold>
                     ชื่อ - นามสกุล
                   </Text>
@@ -350,7 +422,7 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
                     เลขใบประกอบวิชาชีพ
                   </Text>
                 </TableHead>
-                <TableHead className="p-4 min-w-[150px]">
+                <TableHead className="p-4 min-w-[150px] text-center">
                   <Text className="text-white text-[18px]" semibold>
                     บทบาท
                   </Text>
@@ -366,11 +438,8 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staffs.map((staff, index) => (
-                <TableRow key={index}>
-                  <TableCell className="p-4">
-                    <Text semibold>{staff.userId}</Text>
-                  </TableCell>
+              {(staffs ?? [])?.map((staff) => (
+                <TableRow key={staff.userId}>
                   <TableCell className="p-4">
                     <Text>
                       {staff.tname}
@@ -378,18 +447,18 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
                     </Text>
                   </TableCell>
                   <TableCell className="p-4 text-center">
-                    <Text>{staff.license || "-"}</Text>
+                    <Text>{staff?.license || "-"}</Text>
                   </TableCell>
-                  <TableCell className="p-4">
+                  <TableCell className="p-4 text-center">
                     <Text>
-                      {staff.roleID !== undefined
+                      {staff?.roleID !== undefined
                         ? roleNameMap[staff.roleID] || "ไม่ระบุ"
                         : "ไม่ระบุ"}
                     </Text>
                   </TableCell>
                   <TableCell className="p-4 text-center">
                     <Text>
-                      {staff.clinicid !== undefined
+                      {staff?.clinicid !== undefined
                         ? clinicNameMap[staff.clinicid] || "-"
                         : "-"}
                     </Text>
@@ -402,12 +471,14 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
                       >
                         <SquarePenIcon />
                       </Button>
-                      <Button
-                        variant={"destructive"}
-                        onClick={() => handleModal(staff.userId)}
-                      >
-                        <SquareXIcon />
-                      </Button>
+                      {roleName === "Administrator" && (
+                        <Button
+                          variant={"destructive"}
+                          onClick={() => handleModal(staff.userId)}
+                        >
+                          <SquareXIcon />
+                        </Button>
+                      )}
                     </Flex>
                   </TableCell>
                 </TableRow>
@@ -464,11 +535,20 @@ function Stafftable({ onClose, refreshTrigger }: Props) {
 
       {/* Show pagination info */}
       <Flex justifyContent="center" className="mt-2">
-        <Text className="text-sm text-gray-600">
-          แสดง {(page - 1) * limit + 1} - {Math.min(page * limit, total)} จาก{" "}
-          {total} รายการ
-        </Text>
+        {error === "ไม่พบข้อมูลเจ้าหน้าที่" ? (
+          <Text bold className="text-md text-red-500">
+            {error}
+          </Text>
+        ) : (
+          <Text className="text-sm text-gray-600">
+            แสดง {(page - 1) * limit + 1} - {Math.min(page * limit, total)} จาก{" "}
+            {total} รายการ
+          </Text>
+        )}
       </Flex>
+
+      {fetchLoading && <Loading isOpen message="กำลังโหลดเจ้าหน้าที่" />}
+      {deleteLoading && <Loading isOpen message="กำลังลบเจ้าหน้าที่" />}
 
       {isEditMode && selectedStaff && (
         <Addstaff

@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Flex from "../../components/Flex";
@@ -25,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Loading from "@/components/Loading";
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -35,14 +39,21 @@ const formSchema = z.object({
   }),
 });
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function LoginCard() {
+  // Navigate
   const nav = useNavigate();
+
+  // Modal State
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [isLoginSuccess, setIsLoginSuccess] = useState<boolean>(false);
 
+  // Loading State
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Default Value Login Form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,6 +66,7 @@ function LoginCard() {
     setError("");
     setIsLoginSuccess(false);
     setModalOn(false);
+    setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         users: values.username,
@@ -62,13 +74,16 @@ function LoginCard() {
       });
 
       if (response?.data) {
+        // console.log(response?.data);
         const user = response?.data;
         const token = user.accessToken;
 
+        sessionStorage.setItem("userId", user.userId);
         sessionStorage.setItem("token", token);
         sessionStorage.setItem("users", user.users);
         sessionStorage.setItem("roleName", user.role);
         sessionStorage.setItem("roleId", user.roleID);
+        sessionStorage.setItem("clinicId", user.clinicId);
 
         setIsLoginSuccess(true); // ตั้งค่าเป็น true เมื่อเข้าสู่ระบบสำเร็จ
         setModalOn(true); // เปิด modal สำหรับ SuccessModal
@@ -115,7 +130,7 @@ function LoginCard() {
             }, 2000);
           } else {
             // ข้อผิดพลาด Server อื่นๆ ที่มี response
-            setError(`เซิร์ฟเวอร์ขัดข้อง (สถานะ: ${errorStatus})`);
+            setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorStatus})`);
             setModalOn(true);
             setTimeout(() => {
               setError("");
@@ -150,6 +165,8 @@ function LoginCard() {
           setModalOn(false);
         }, 2000);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,6 +259,9 @@ function LoginCard() {
           </CardContent>
         </Card>
       </LogoBackground>
+
+      {loading && <Loading isOpen message="กำลังลงชื่อเข้าใช้" />}
+
       {modalOn && isLoginSuccess && (
         <SuccessModal message="เข้าสู่ระบบสำเร็จ" isVisible={modalOn} />
       )}
