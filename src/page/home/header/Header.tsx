@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import {
   UsersRoundIcon,
   X,
 } from "lucide-react";
+import Loading from "@/components/Loading";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -36,6 +39,9 @@ function Header() {
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [activeNavIndex, setActiveNavIndex] = useState<number | null>(null);
+
+  // Loading State
+  const [loading, setLoading] = useState<boolean>(false);
 
   const location = useLocation();
   const nav = useNavigate();
@@ -63,8 +69,9 @@ function Header() {
   };
 
   const handleSignout = async () => {
-    const token = sessionStorage.getItem("token");
+    setLoading(true);
     try {
+      const token = sessionStorage.getItem("token");
       await axios.post(
         `${API_BASE_URL}/api/auth/logout`,
         {},
@@ -93,6 +100,8 @@ function Header() {
         setError("");
         setModalOn(false);
       }, 1000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -257,7 +266,7 @@ function Header() {
         >
           <X />
         </Flex>
-        <Flex justifyContent="center" className="rounded-4xl ">
+        <Flex justifyContent="center" className="rounded-4xl bg-white/95">
           <img src={DentImg} alt="Logo" className="w-[150px]" />
         </Flex>
         <Flex alignItems="center" justifyContent="center" className="gap-[8px]">
@@ -313,7 +322,7 @@ function Header() {
       {/******** Desktop ********/}
       <Flex
         justifyContent="between"
-        className={`bg-[#4B006E] relative hidden xl:flex px-6 py-4 transition-all duration-300 h-screen shadow-[${colors.primary}] shadow-xl`}
+        className={`bg-[#4B006E] relative hidden xl:flex px-6 py-4 transition-all duration-300 max-w-[280px] w-full h-screen shadow-[${colors.primary}] shadow-xl`}
         direction="column"
       >
         <Flex direction="column" className="gap-[28px]">
@@ -338,11 +347,11 @@ function Header() {
             <Text semibold className="text-white text-[24px]">
               {users}
             </Text>
-            <Flex alignItems="center" className="gap-[8px]">
+            <Flex alignItems="center" className="gap-[8px] ">
               <Text className="text-white ">{"บทบาท:"}</Text>
               {roleName === "Administrator" ? (
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
-                  <SelectTrigger className="border-[#8105bb]">
+                  <SelectTrigger className="border-[#8105bb]  max-w-[180px] w-full flex-1">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -404,6 +413,8 @@ function Header() {
           </Flex>
         </Flex>
       </Flex>
+
+      {loading && <Loading isOpen message="กำลังลงชื่อออก" />}
 
       {modalOn && !error && (
         <SuccessModal message="ลงชื่อออกสำเร็จ" isVisible={modalOn} />

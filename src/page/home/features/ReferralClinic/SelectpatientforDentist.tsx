@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Flex from "@/components/Flex";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Text from "@/components/Text";
@@ -11,41 +14,41 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   dn: string;
   onClose: () => void;
 }
 
-// type Dentist = {
-//   userId: number;
-//   tName: string;
-//   fName: string;
-//   lName: string;
-// };
+type Dentist = {
+  userId: number;
+  tname: string;
+  fname: string;
+  lname: string;
+};
 
 function SelectpatientforDentist({ dn, onClose }: Props) {
-  const [dentists, setDentists] = useState<string>("");
+  const [dentists, setDentists] = useState<Dentist[]>([]);
+  const [selectedDentist, setSelectedDentist] = useState<string>("");
   const [modalOn, setModalOn] = useState<boolean>(false);
   const [verifyOn, setVerifyOn] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const dentistOptions = [
-    {
-      value: "1",
-      label: "อาจารย์ยิ่งศักดิ์ กินไม่ได้ก็เขี่ยทิ้งไป",
-    },
-  ];
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const nav = useNavigate();
 
   const handleModal = () => {
     setVerifyOn(!verifyOn);
   };
 
   const handleSelectPatientToDentist = () => {
-    if (!dentists) {
+    if (!selectedDentist) {
       setError("กรุณาระบุทันตแพทย์");
       setVerifyOn(!verifyOn);
       setModalOn(true);
@@ -64,6 +67,61 @@ function SelectpatientforDentist({ dn, onClose }: Props) {
       onClose();
     }, 1000);
   };
+
+  const dentistListFetch = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_BASE_URL}/api/tbdentalrecorduser/teacher`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response) {
+        // console.log(response?.data);
+        setDentists(response?.data ?? []);
+      }
+    } catch (e: any) {
+      let errorMessage = e.response?.data;
+      let errorStatus = e.response?.status;
+      console.error(e.response);
+
+      if (errorStatus == 401) {
+        setError("ไม่ได้รับอนุญาตเข้าใช้งาน");
+        setModalOn(true);
+
+        return setTimeout(() => {
+          setModalOn(false);
+          setError("");
+          sessionStorage.clear();
+          nav("/");
+        }, 2000);
+      } else if (errorStatus == 403) {
+        setError("ไม่มีสิทธิ์เข้าถึงฟีเจอร์นี้");
+      } else if (errorStatus == 404) {
+        if (errorMessage == "Tbdentalrecorduser not found") {
+          setError("ไม่มีข้อมูลอาจารย์");
+        }
+      } else {
+        setError(`เซิร์ฟเวอร์ขัดข้อง: ${errorMessage}`);
+      }
+
+      setModalOn(true);
+
+      setTimeout(() => {
+        setModalOn(false);
+        setError("");
+      }, 2000);
+    }
+  };
+
+  useEffect(() => {
+    dentistListFetch();
+  }, []);
   return (
     <Flex
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transform transition-all duration-300  p-6 md:p-24 lg:p-36 xl:p-72"
@@ -95,15 +153,21 @@ function SelectpatientforDentist({ dn, onClose }: Props) {
               justifyContent="center"
               className="gap-[12px]"
             >
-              <Select value={dentists} onValueChange={setDentists}>
+              <Select
+                value={selectedDentist}
+                onValueChange={setSelectedDentist}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="ระบุทันตแพทย์" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {dentistOptions.map((dentist, index) => (
-                      <SelectItem key={index} value={dentist.value}>
-                        {dentist.label}
+                    {dentists.map((dentist) => (
+                      <SelectItem
+                        key={dentist.userId}
+                        value={dentist.userId.toString()}
+                      >
+                        {dentist.tname} {dentist.fname} {dentist.lname}
                       </SelectItem>
                     ))}
                   </SelectGroup>
