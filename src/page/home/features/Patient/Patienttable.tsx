@@ -28,7 +28,7 @@ import { ReferIcon } from "@/assets/svg";
 import { useNavigate } from "react-router-dom";
 import { ErrorModal, SuccessModal, VerifyModal } from "@/components/Modal";
 import { Info, SquareXIcon, X } from "lucide-react";
-import Referpatient from "./Referpatient";
+// import Referpatient from "./Referpatient";
 import { API_BASE_URL } from "@/page/login/LoginCard";
 import { getPagination } from "../StaffManagement/Stafftable";
 import Screeningform from "./Screeningform";
@@ -70,12 +70,12 @@ function Patienttable({ keyword }: Props) {
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [selectedDN, setSelectedDN] = useState<string | null>("");
-  const [selectPatient, setSelectpatient] = useState({
-    dn: "",
-    titleTh: "",
-    nameTh: "",
-    surnameTh: "",
-  });
+  // const [selectPatient, setSelectpatient] = useState({
+  //   dn: "",
+  //   titleTh: "",
+  //   nameTh: "",
+  //   surnameTh: "",
+  // });
 
   const formScreening = useForm<PatientFormData>({
     defaultValues: {
@@ -92,7 +92,7 @@ function Patienttable({ keyword }: Props) {
   const [referClinicOn, setreferClinicOn] = useState<boolean>(false);
   const [fetchLoading, setFetchLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
-
+  console.log(referClinicOn);
   const handleScreeningOn = () => {
     setScreeningOn(!screeningOn);
   };

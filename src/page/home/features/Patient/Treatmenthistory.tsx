@@ -4,7 +4,7 @@ import Flex from "@/components/Flex";
 import Text from "@/components/Text";
 import { API_BASE_URL } from "@/page/login/LoginCard";
 import axios from "axios";
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 type TreatmentHistory = {
@@ -37,6 +37,8 @@ function Treatmenthistory({ dn }: Props) {
   const [treatmentHistory, setTreatmentHistory] = useState<TreatmentHistory[]>(
     []
   );
+
+  console.log(treatmentHistory);
   const treatmentHistoryFetch = async () => {
     try {
       const token = sessionStorage.getItem("token");

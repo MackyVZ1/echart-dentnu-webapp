@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Image, X } from "lucide-react";
 import { useState, useEffect } from "react"; // นำเข้า useState และ useEffect
-import type { UseFormReturn } from "react-hook-form";
-import type { treatmentRecordFormData } from "./Treatmentrecordform";
+// import type { UseFormReturn } from "react-hook-form";
+// import type { treatmentRecordFormData } from "./Treatmentrecordform";
 
-interface Props {
-  form: UseFormReturn<treatmentRecordFormData>;
-}
+// interface Props {
+//   form: UseFormReturn<treatmentRecordFormData>;
+// }
 
-function Teethimginput({ form }: Props) {
+function Teethimginput() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
